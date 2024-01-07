@@ -1,0 +1,118 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model Users {
+  id            Int       @id @default(autoincrement())
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime?  @updatedAt
+  phoneNumber   Int    @unique
+  password      String   
+  address       String? 
+  name          String?
+  gender        String?
+  role          String
+  birthDate     String?
+  status        String
+  image         String?
+  refreshToken  String?
+  healthInsurances HealthInsurances[]
+  diagnostics   Diagnostics[]
+  messages      Messages[]
+  appointments  Appointments[]
+  reviews       Reviews[]
+}
+
+model Hospitals {
+  id              Int              @id @default(autoincrement())
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  hospitalType    String
+  specialization  Specializations? @relation(fields: [specializationId], references: [id])
+  specializationId Int
+  industryCode    Int
+  status          String
+  messages        Messages[]
+  appointments    Appointments[]
+  reviews         Reviews[]
+}
+
+model HealthInsurances {
+  id      Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user    Users    @relation(fields: [userId], references: [id])
+  userId  Int
+  type    String
+  code    String
+  status  String
+}
+
+model Diagnostics {
+  id            Int      @id @default(autoincrement())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          Users    @relation(fields: [userId], references: [id])
+  userId        Int
+  description   String
+  typeOfDisease String
+}
+
+model Messages {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      Users    @relation(fields: [userId], references: [id])
+  userId    Int
+  hospital  Hospitals @relation(fields: [hospitalId], references: [id])
+  hospitalId Int
+  content   String
+  date      DateTime
+}
+
+model Appointments {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        Users    @relation(fields: [userId], references: [id])
+  userId      Int
+  hospital    Hospitals @relation(fields: [hospitalId], references: [id])
+  hospitalId  Int
+  orderNumber Int
+  estimated   DateTime
+  endTime     DateTime
+  date        DateTime
+  status      String
+}
+
+model Reviews {
+  id            Int      @id @default(autoincrement())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  rating        Float
+  user          Users    @relation(fields: [userId], references: [id])
+  userId        Int
+  hospital      Hospitals @relation(fields: [hospitalId], references: [id])
+  hospitalId    Int
+  review        String
+  date_review   DateTime
+}
+
+model Specializations {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  name      String
+  clinic    String
+  roomNumber String
+  hospitals Hospitals[]
+}
