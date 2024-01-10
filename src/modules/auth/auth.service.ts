@@ -13,16 +13,20 @@ import { PrismaService } from '../prisma/prisma.service';
 @Injectable()   
 export class AuthService {
 
-    constructor(private prismaService : PrismaService) {}
+    constructor(
+      private prismaService : PrismaService,
+      private jwtService: JwtService,
+      private configService: ConfigService
+      ) {}
       
     async register(registerDto: RegisterDto)  {
-        // const { phoneNumber, password } = registerDto;
-        // const existingUser = await this.prismaService.findOne({
-        //   where: { phoneNumber },
-        // });
-        // if (existingUser) {
-        //   throw new ConflictException('User already exists');
-        // }
+        const { phoneNumber } = registerDto;
+        const existingUser = await this.prismaService.users.findUnique({
+          where: {phoneNumber},
+        });
+        if (existingUser) {
+          throw new ConflictException('User already exists');
+        }
         const hashedPassword = await bcrypt.hash(registerDto.password,10);
         const newUser = await this.prismaService.users.create({
             data: {
@@ -43,11 +47,54 @@ export class AuthService {
                 id:true,
                 phoneNumber:true,
                 createdAt:true
-              }
-           
+              }    
         });
         return newUser
       }
-    
 
+      async login(loginDto: LoginDto) {
+        const user = await this.usersRepository
+          .createQueryBuilder('user')
+          .where('user.phoneNumber = :phoneNumber', { phoneNumber: loginDto.phoneNumber })
+          .getOne();
+        if (!user) {
+          throw new HttpException('User does not exist', HttpStatus.UNAUTHORIZED);
+        }
+        const isPasswordValid = await bcrypt.compare(loginDto.password, user.password);
+        if (!isPasswordValid) {
+          throw new UnauthorizedException('Invalid credentials');
+        }
+        
+        const refreshToken = await this.generateRefreshToken();
+        user.refreshToken = refreshToken; // Update user's refreshToken
+        await this.usersRepository.save(user);
+      
+        const accessToken = await this.generateAccessToken(user); // Use the updated refreshToken here
+        return { accessToken, refreshToken };
+      }
+
+      private async generateAccessToken(user: Users) {
+        if (!user.role || !user.role.nameRole) {
+          throw new Error('User role information is missing');
+        }
+        const payload = { id: user.id,
+          phoneNumber: user.phoneNumber,
+          name: user.name,
+          role: user.role.nameRole,
+          refreshToken: user.refreshToken,
+        };
+        const accessToken = await this.jwtService.signAsync(payload, {
+          secret: this.configService.get<string>('ACCESS_TOKEN_SECRET'),
+          expiresIn: this.configService.get<string>('EXP_IN_ACCESS_TOKEN'),
+        });
+        return accessToken;
+      }
+    
+      private async generateRefreshToken(): Promise<string> {
+        const refreshToken= await this.jwtService.signAsync({}, {
+          secret: this.configService.get<string>('REFRESH_TOKEN_SECRET'),
+          expiresIn: this.configService.get<string>('EXP_IN_REFRESH_TOKEN'),
+        });
+        return refreshToken;
+      }
 }

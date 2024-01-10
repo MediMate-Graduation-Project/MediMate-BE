@@ -13,4 +13,9 @@ export class AuthController {
     return this.authService.register(body);
   }
 
+  @Post('login')
+  @UsePipes(ValidationPipe)
+  login(@Body() body:LoginDto) {
+      return this.authService.login(body);
+  }
 }

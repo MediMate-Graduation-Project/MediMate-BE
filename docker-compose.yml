@@ -10,12 +10,13 @@ services:
     ports:
       - 3000:3000
     environment:
-      - DB_TYPE=${DB_TYPE}
-      - PG_HOST=${PG_HOST}
-      - PG_USER=${PG_USER}
-      - PG_PASSWORD=${PG_PASSWORD}
-      - PG_DB=${PG_DB}
-      - PG_PORT=${PG_PORT}
+      - DATABASE_URL=${DATABASE_URL}
+      # - DB_TYPE=${DB_TYPE}
+      # - PG_HOST=${PG_HOST}
+      # - PG_USER=${PG_USER}
+      # - PG_PASSWORD=${PG_PASSWORD}
+      # - PG_DB=${PG_DB}
+      # - PG_PORT=${PG_PORT}
       # - REDIS_HOST=${REDIS_HOST} # Địa chỉ của Redis container
       # - REDIS_PORT=${REDIS_PORT} # Cổng Redis
       # - REDIS_PASS=${REDIS_PASS}
@@ -31,6 +32,7 @@ services:
     ports:
       - 5432:5432
     environment:
+    #  - DATABASE_URL=${DATABASE_URL}
       - POSTGRES_USER=${PG_USER}
       - POSTGRES_PASSWORD=${PG_PASSWORD}
       - POSTGRES_DB=${PG_DB}
