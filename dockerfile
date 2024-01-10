@@ -1,22 +1,27 @@
-    # Base image
-    FROM node:18
+FROM node:lts AS development
+WORKDIR /usr/src/app
 
-    # Create app directory
-    WORKDIR /usr/src/app
+COPY package.json ./
+# COPY yarn.lock ./
+COPY prisma ./prisma
 
-    # A wildcard is used to ensure both package.json AND yarn.lock are copied
-    COPY package.json yarn.lock ./
+RUN yarn -D
 
-    # Install app dependencies using yarn
-    RUN yarn install
+COPY . .
+RUN yarn pmg
+RUN yarn build
 
-    # Bundle app source
-    COPY . .
+FROM node:lts AS production
+ARG NODE_ENV=production
+ENV NODE_ENV=${NODE_ENV}
 
-    # Creates a "dist" folder with the production build
-    RUN yarn build
+WORKDIR /usr/src/app
 
-    EXPOSE 3000
+COPY --from=development /usr/src/app/node_modules ./node_modules
+COPY --from=development /usr/src/app/package.json ./
+COPY --from=development /usr/src/app/yarn.lock ./
+COPY --from=development /usr/src/app/dist ./dist
+# COPY --from=development /usr/src/app/dist/modules/mail/templates ./dist/src/modules/mail/templates
+COPY ./prisma/ ./prisma/
 
-    # Start the server using the production build
-    CMD [ "yarn", "start:prod" ]
+CMD ["yarn", "start:prod"]
