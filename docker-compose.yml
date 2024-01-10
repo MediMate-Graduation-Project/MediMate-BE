@@ -10,13 +10,13 @@ services:
     ports:
       - 3000:3000
     environment:
-      - DATABASE_URL=${DATABASE_URL}
-      # - DB_TYPE=${DB_TYPE}
-      # - PG_HOST=${PG_HOST}
-      # - PG_USER=${PG_USER}
-      # - PG_PASSWORD=${PG_PASSWORD}
-      # - PG_DB=${PG_DB}
-      # - PG_PORT=${PG_PORT}
+      # - DATABASE_URL=${DATABASE_URL}
+      - DB_TYPE=${DB_TYPE}
+      - PG_HOST=${PG_HOST}
+      - PG_USER=${PG_USER}
+      - PG_PASSWORD=${PG_PASSWORD}
+      - PG_DB=${PG_DB}
+      - PG_PORT=${PG_PORT}
       # - REDIS_HOST=${REDIS_HOST} # Địa chỉ của Redis container
       # - REDIS_PORT=${REDIS_PORT} # Cổng Redis
       # - REDIS_PASS=${REDIS_PASS}
@@ -25,6 +25,8 @@ services:
       # - redis
     env_file:
       - .env
+    networks:
+      - postgres_public
 
   db:
     container_name: db
@@ -40,6 +42,8 @@ services:
       - pgdata:/var/lib/postgresql/data
     env_file:
       - .env
+    networks:
+      - postgres_public
 
   # redis:
   #   container_name: redis
@@ -56,3 +60,6 @@ services:
 volumes:
   pgdata: {}
   redis: {}
+networks:
+  postgres_public:
+    external: true

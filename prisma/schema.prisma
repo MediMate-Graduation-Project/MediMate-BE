@@ -20,9 +20,9 @@ model Users {
   address       String? 
   name          String?
   gender        String?
-  role          String
+  role          UserRole @default(USER)
   birthDate     String?
-  status        String
+  status        UserStatus @default(ACTIVE)
   image         String?
   refreshToken  String?
   healthInsurances HealthInsurances[]
@@ -30,6 +30,16 @@ model Users {
   messages      Messages[]
   appointments  Appointments[]
   reviews       Reviews[]
+}
+
+enum UserRole {
+  ADMIN
+  USER
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
 }
 
 model Hospitals {
