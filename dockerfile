@@ -24,4 +24,4 @@ COPY --from=development /usr/src/app/dist ./dist
 # COPY --from=development /usr/src/app/dist/modules/mail/templates ./dist/src/modules/mail/templates
 COPY ./prisma/ ./prisma/
 
-CMD ["yarn", "start:prod"]
+CMD ["yarn", "start:migrate:prod"]
