@@ -1,9 +1,7 @@
 version: '3.9'
 
 services:
-  nestapp:
-    container_name: web_app
-    image: postgresql_db
+  medimate-server:
     build:
       context: .
       dockerfile: Dockerfile

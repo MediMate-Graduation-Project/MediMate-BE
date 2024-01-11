@@ -22,7 +22,7 @@
     "pms": "npx prisma studio",
     "pmg": "npx prisma generate",
     "seed": "npx nestjs-command ",
-    "start:migrate:prod": "npx prisma generate && npm run start:prod"
+    "start:migrate:prod": "npx prisma migrate deploy && npm run start:prod"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",
