@@ -2,7 +2,7 @@ FROM node:lts AS development
 WORKDIR /usr/src/app
 
 COPY package.json ./
-# COPY yarn.lock ./
+COPY yarn.lock ./
 COPY prisma ./prisma
 
 RUN yarn -D
@@ -25,3 +25,5 @@ COPY --from=development /usr/src/app/dist ./dist
 COPY ./prisma/ ./prisma/
 
 CMD ["yarn", "start:migrate:prod"]
+
+
