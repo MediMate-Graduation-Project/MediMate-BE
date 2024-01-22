@@ -22,7 +22,7 @@ model Users {
   gender        String?
   role          UserRole @default(USER)
   birthDate     String?
-  status        UserStatus @default(ACTIVE)
+  status        Status @default(ACTIVE)
   image         String?
   refreshToken  String?
   healthInsurances HealthInsurances[]
@@ -37,7 +37,7 @@ enum UserRole {
   USER
 }
 
-enum UserStatus {
+enum Status {
   ACTIVE
   INACTIVE
 }
@@ -46,11 +46,12 @@ model Hospitals {
   id              Int              @id @default(autoincrement())
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
+  hospitalName    String     @unique
   hospitalType    String
   specialization  Specializations? @relation(fields: [specializationId], references: [id])
   specializationId Int
   industryCode    Int
-  status          String
+  status        Status @default(ACTIVE)
   messages        Messages[]
   appointments    Appointments[]
   reviews         Reviews[]
