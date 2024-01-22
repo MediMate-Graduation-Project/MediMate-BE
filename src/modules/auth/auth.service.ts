@@ -1,15 +1,14 @@
 
 import { Injectable, ConflictException, NotFoundException, Res, UnauthorizedException, HttpException, HttpStatus } from '@nestjs/common';
 import { RegisterDto } from './dto/register.dto';
-import { Response } from 'express';
 import { Users } from '.prisma/client';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 import { LoginDto } from './dto/login.dto';
-import { LogoutDto } from './dto/logout.dto';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { successException } from 'src/commons/Exception/succesExeption';
+import { TokenPayload } from 'src/commons/constants/type';
+
 
 @Injectable()   
 export class AuthService {
@@ -20,6 +19,7 @@ export class AuthService {
       private readonly configService: ConfigService,
       ) {}
       
+    
     async register(registerDto: RegisterDto)  {
         const { phoneNumber } = registerDto;
         const existingUser = await this.prismaService.users.findUnique({
@@ -46,24 +46,11 @@ export class AuthService {
       async login(loginDto: LoginDto) {
         const user = await this.prismaService.users.findUnique({
           where: { phoneNumber: loginDto.phoneNumber },
-          select: { 
-            id: true,
-            createdAt: true,
-            updatedAt: true,
-            phoneNumber: true,
-            password: true,
-            address: true,
-            name: true,
-            gender: true,
-            role: true,
-            birthDate: true,
-            status: true,
-            image: true,
-            refreshToken: true,},
+          
         });
     
         if (!user) {
-          throw new HttpException('User does not exist', HttpStatus.UNAUTHORIZED);
+          throw new UnauthorizedException('User does not exist')
         }
     
         const isPasswordValid = await bcrypt.compare(loginDto.password, user.password);
@@ -108,21 +95,6 @@ export class AuthService {
         const decodedToken = this.jwtService.decode(refreshToken) as { id: number };
         const user = await this.prismaService.users.findUnique({
           where: { id: decodedToken.id },
-          select: {
-            id: true,
-            createdAt: true,
-            updatedAt: true,
-            phoneNumber: true,
-            password: true,
-            address: true,
-            name: true,
-            gender: true,
-            role: true,
-            birthDate: true,
-            status: true,
-            image: true,
-            refreshToken: true,
-          },
         });
 
         if (user && user.refreshToken === refreshToken && !this.isTokenExpired(refreshToken)) {
@@ -138,7 +110,7 @@ export class AuthService {
     }
 
     private isTokenExpired(token: string): boolean {
-      const decodedToken = this.jwtService.decode(token, { json: true }) as { exp: number };
+      const decodedToken = this.jwtService.decode(token, { json: true }) as TokenPayload;
       return Date.now() >= decodedToken.exp * 1000;
     }
 
@@ -164,5 +136,6 @@ export class AuthService {
         });
         return refreshToken;
       }
+
 }
 

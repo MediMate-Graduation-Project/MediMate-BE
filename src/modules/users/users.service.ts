@@ -13,13 +13,13 @@ export class UsersService {
     }});
   }
 
+  
   async getUserById(id: number): Promise<Users | null> {
     const user = await this.prismaService.users.findUnique({
       where: {
         id : Number(id) ,
         status : "ACTIVE" },
     });
-    
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
