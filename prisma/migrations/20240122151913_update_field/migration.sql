@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Hospitals" ADD COLUMN     "a" INTEGER NOT NULL DEFAULT 0;

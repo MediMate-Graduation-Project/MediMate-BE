@@ -16,6 +16,8 @@ import { DiagnosticModule } from './modules/diagnostic/diagnostic.module';
 import { MedicalRecordModule } from './modules/medical-record/medical-record.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CacheModule } from '@nestjs/cache-manager';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtAuthGuard } from './modules/auth/guards/jwt.guard';
 
 @Module({
   imports: [ 
@@ -25,6 +27,11 @@ import { CacheModule } from '@nestjs/cache-manager';
     }),
   AuthModule, UsersModule, RolesModule, HospitalsModule, PaymentsModule, MessagesModule, SpecializationModule, ReviewsModule, AppointmentsModule, HealthInsurancesModule, DiagnosticModule, MedicalRecordModule],
   controllers: [],
-  providers: [],
+  providers: [
+  //   {
+  //   provide: APP_GUARD , 
+  //   useClass: JwtAuthGuard
+  // }
+],
 })
 export class AppModule {}
