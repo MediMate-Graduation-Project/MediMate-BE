@@ -1,12 +1,18 @@
-import { Controller, Post, Body,ValidationPipe ,UsePipes, HttpStatus, Res, UnauthorizedException, Req} from '@nestjs/common';
+import { Controller, Post, Body,ValidationPipe ,UsePipes, HttpStatus, Res, UnauthorizedException, Req, UseGuards, Get, Logger} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Response as ExpressResponse ,Request as ExpressRequest} from 'express';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { LogoutDto } from './dto/logout.dto';
-import { getAccessTokenFromCookie, getRefreshTokenFromCookie } from 'src/commons/constants/token';
+import { RequestWithUser, SanitizedUser } from './types';
+import { LocalAuthGuard } from './guards/local.guard';
+import { JwtAuthGuard } from './guards/jwt.guard';
+import { Role } from 'src/commons/constants/role.enum';
+import { ROLES } from './decorator/role.decorator';
+import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from 'src/commons/constants/token';
 @Controller('auth')
 export class AuthController {
+  private readonly logger: Logger = new Logger(AuthController.name)
   constructor(private readonly authService: AuthService) {
   }
 
@@ -15,25 +21,31 @@ export class AuthController {
     return this.authService.register(body);
   }
 
+  @UseGuards(LocalAuthGuard)
   @Post('login')
-  async login(@Body() body: LoginDto, @Res() res: ExpressResponse) {
+  async login(@Req() req:RequestWithUser, @Res() res: ExpressResponse) {
     try {
-      const { accessToken, refreshToken } = await this.authService.login(body);
+      const { accessToken, refreshToken } = await this.authService.login(req.user);
       this.setCookies(res, accessToken, refreshToken);
       res.status(HttpStatus.OK).end('Logged in successfully');
     } catch (error) {
+      this.logger.error(error)
       res.status(HttpStatus.UNAUTHORIZED).end('Login failed');
     }
   }
 
+  @UseGuards(JwtAuthGuard)
+  @ROLES(Role.User)
+  @Get('profile')
+  async getProfile(@Req() req:RequestWithUser):Promise<SanitizedUser>{
+    return req.user
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Post('logout')
-  async logout(@Res() res: ExpressResponse, @Req() req: ExpressRequest) {
+  async logout(@Req() req:RequestWithUser,@Res() res: ExpressResponse) {
     try {
-      const accessToken = getAccessTokenFromCookie(req);
-      if (!accessToken) {
-        throw new UnauthorizedException('Access token not provided');
-      }
-      await this.authService.logout(accessToken);
+      await this.authService.logout(req.user)
       this.clearCookies(res);
       res.end('Signed out successfully');
     } catch (error) {
@@ -41,37 +53,27 @@ export class AuthController {
     }
   }
 
-  
+  @UseGuards(JwtAuthGuard)
   @Post('refresh')
-  async refreshToken(@Res() res: ExpressResponse, @Req() req: ExpressRequest) {
+  async refreshToken(@Res() res: ExpressResponse, @Req() req:RequestWithUser) {
     try {
-      const refreshToken = getRefreshTokenFromCookie(req)
-
-      if (!refreshToken) {
-        throw new UnauthorizedException('Refresh token not provided');
-      }
-
-      const newAccessToken = await this.authService.refreshToken(refreshToken);
-      res.cookie('access_token', newAccessToken.accessToken, { httpOnly: true, secure: true, expires: new Date(Date.now() + 3600000) });
+      const accessToken  = await this.authService.refreshToken(req.user);
+      res.cookie(ACCESS_TOKEN_KEY, accessToken, { httpOnly: true, secure: true, expires: new Date(Date.now() + 3600000) });
       res.end('Refresh token successfully');
     } catch (error) {
-      if (error instanceof UnauthorizedException) {
-        res.status(HttpStatus.UNAUTHORIZED).end('The refresh token has expired or is invalid');
-      } else {
         res.status(HttpStatus.BAD_REQUEST).end('Error trying to update access token');
       }
-    }
+    
   }
 
-
   private setCookies(res: ExpressResponse, accessToken: string, refreshToken: string) {
-    res.cookie('access_token', accessToken, { httpOnly: true, secure: true, expires: new Date(Date.now() + 10000) });
+    res.cookie('access_token', accessToken, { httpOnly: true, secure: true, expires: new Date(Date.now() + 3600000) });
     res.cookie('refresh_token', refreshToken, { httpOnly: true, secure: true, expires: new Date(Date.now() + 14400000) });
   }
 
   private clearCookies(res: ExpressResponse) {
-    res.clearCookie('access_token');
-    res.clearCookie('refresh_token');
+    res.clearCookie(ACCESS_TOKEN_KEY);
+    res.clearCookie(REFRESH_TOKEN_KEY);
   }
   
 }

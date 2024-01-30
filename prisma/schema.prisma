@@ -15,7 +15,7 @@ model Users {
   id            Int       @id @default(autoincrement())
   createdAt     DateTime  @default(now())
   updatedAt     DateTime?  @updatedAt
-  phoneNumber   Int    @unique
+  phoneNumber   String    @unique
   password      String   
   address       String? 
   name          String?
@@ -50,6 +50,7 @@ model Hospitals {
   hospitalType    String
   specialization  Specializations? @relation(fields: [specializationId], references: [id])
   specializationId Int
+  a Int @default(0)
   industryCode    Int
   status        Status @default(ACTIVE)
   messages        Messages[]
