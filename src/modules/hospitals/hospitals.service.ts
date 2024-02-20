@@ -16,6 +16,7 @@ export class HospitalsService {
     });
   }
 
+
   async createHospital(createHospitalDto: CreateHospitalDto)  {
     const { hospitalName } = createHospitalDto;
     const existinghospital = await this.prismaService.hospitals.findUnique({
@@ -24,6 +25,7 @@ export class HospitalsService {
     if (existinghospital) {
       throw new ConflictException('hospital already exists');
     }
+    
     const newHospital = await this.prismaService.hospitals.create({
         data: {
             hospitalName: createHospitalDto.hospitalName,
