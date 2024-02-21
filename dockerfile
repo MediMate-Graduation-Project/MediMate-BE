@@ -25,6 +25,9 @@ COPY --from=development /usr/src/app/dist ./dist
 # COPY --from=development /usr/src/app/dist/modules/mail/templates ./dist/src/modules/mail/templates
 COPY ./prisma/ ./prisma/
 
+EXPOSE 3000
+
 CMD ["yarn", "start:migrate:prod"]
+
 
 
