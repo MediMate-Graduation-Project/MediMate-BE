@@ -1,4 +1,4 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, ValidationPipe } from '@nestjs/common';
 import { AppointmentsService } from './appointments.service';
 import { CreateAppointmentDto } from './dto/CreateAppointmentDto';
 
@@ -7,10 +7,11 @@ import { CreateAppointmentDto } from './dto/CreateAppointmentDto';
 export class AppointmentsController {
   constructor(private readonly appointmentsService: AppointmentsService) {}
 
-  // @Post()
-  // async createAppointment(@Body() createAppointmentDto: { userId: number, date: Date, hospitalId: number }) {
-  //   const { userId, date, hospitalId } = createAppointmentDto;
-  //   const createdAppointment = await this.appointmentsService.createAppointment(userId, date, hospitalId);
-  //   return createdAppointment;
-  // }
+  @Post('book')
+  async bookAppointment(
+    @Body(new ValidationPipe()) dto: CreateAppointmentDto,
+  ) {
+    const appointment = await this.appointmentsService.bookAppointment(dto);
+    return { appointment };
+  }
 }

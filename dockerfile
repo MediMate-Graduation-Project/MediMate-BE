@@ -5,7 +5,7 @@ COPY package.json ./
 COPY yarn.lock ./
 COPY prisma ./prisma
 
-RUN yarn -D
+RUN yarn
 
 COPY . .
 RUN yarn pmg
