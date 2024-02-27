@@ -7,13 +7,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
 
 @Module({ 
-  imports: [
-    ConfigModule.forRoot({
-    isGlobal: true,
-    envFilePath: ['.env'], 
-   }),
-   PrismaModule , UsersModule ,JwtModule,
-  ],
+  imports: [],
   controllers: [AuthController],
   providers: [AuthService],
 })
