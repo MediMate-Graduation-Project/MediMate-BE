@@ -30,8 +30,8 @@ export class HospitalsService {
         data: {
             hospitalName: createHospitalDto.hospitalName,
             industryCode: createHospitalDto.industryCode,
-            specializationId: createHospitalDto.specializationId,
             hospitalType: createHospitalDto.hospitalType,
+            address:createHospitalDto.address
           },
           select:{
             id:true,
