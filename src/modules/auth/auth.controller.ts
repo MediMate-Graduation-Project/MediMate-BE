@@ -47,7 +47,7 @@ export class AuthController {
     try {
       await this.authService.logout(req.user)
       this.clearCookies(res);
-      res.end('Signed out successfully');
+      res.status(HttpStatus.OK).end('Signed out successfully');
     } catch (error) {
       res.status(HttpStatus.INTERNAL_SERVER_ERROR).end('Logout failed');
     }
@@ -59,7 +59,7 @@ export class AuthController {
     try {
       const accessToken  = await this.authService.refreshToken(req.user);
       res.cookie(ACCESS_TOKEN_KEY, accessToken, { httpOnly: true, secure: true, expires: new Date(Date.now() + 3600000) });
-      res.end('Refresh token successfully');
+      res.status(HttpStatus.OK).end('Refresh token successfully');
     } catch (error) {
         res.status(HttpStatus.BAD_REQUEST).end('Error trying to update access token');
       }
