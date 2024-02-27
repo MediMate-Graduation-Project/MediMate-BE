@@ -10,10 +10,11 @@ export class CreateHospitalDto {
     @IsNotEmpty({ message: 'industryCode is required' })
     industryCode: number;
   
-    @IsNotEmpty({ message: 'specializationId is required' })
-    specializationId: number;
-
     @IsNotEmpty({ message: 'hospitalType is required' })
     hospitalType: string;
+
+    @IsNotEmpty({ message: 'address is required' })
+    address: string;
 }
+
   
