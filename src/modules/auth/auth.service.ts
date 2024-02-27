@@ -32,11 +32,13 @@ export class AuthService {
         const newUser = await this.prismaService.users.create({
             data: {
                 phoneNumber: registerDto.phoneNumber,
+                name:registerDto.name,
                 password: hashedPassword,
               },
               select:{
                 id:true,
                 phoneNumber:true,
+                name:true,
                 createdAt:true
               }    
         });

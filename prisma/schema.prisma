@@ -48,9 +48,8 @@ model Hospitals {
   updatedAt       DateTime         @updatedAt
   hospitalName    String     @unique
   hospitalType    String
-  specialization  Specializations? @relation(fields: [specializationId], references: [id])
-  specializationId Int
-  a Int @default(0)
+  HospitalSpecialization HospitalSpecialization[]
+  address String
   industryCode    Int
   status        Status @default(ACTIVE)
   messages        Messages[]
@@ -111,12 +110,12 @@ model Reviews {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   rating        Float
-  user          Users    @relation(fields: [userId], references: [id])
+  users Users[]
   userId        Int
-  hospital      Hospitals @relation(fields: [hospitalId], references: [id])
-  hospitalId    Int
   review        String
   date_review   DateTime
+  hospital  Hospitals @relation(fields: [hospitalId], references: [id])
+  hospitalId Int
 }
 
 model Specializations {
@@ -126,5 +125,16 @@ model Specializations {
   name      String
   clinic    String
   roomNumber String
-  hospitals Hospitals[]
+  HospitalSpecialization HospitalSpecialization[]
+}
+
+model HospitalSpecialization {
+  id              Int              @id @default(autoincrement())
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  hospital        Hospitals        @relation(fields: [hospitalId], references: [id])
+  hospitalId      Int
+  specialization  Specializations  @relation(fields: [specializationId], references: [id])
+  specializationId Int
+  @@unique([hospitalId, specializationId])
 }
