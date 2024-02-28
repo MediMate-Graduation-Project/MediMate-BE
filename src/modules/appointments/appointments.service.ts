@@ -134,7 +134,30 @@ export class AppointmentsService {
           if (!appointment) {
             throw new NotFoundException(`Appointment with ID ${appointmentId} not found`);
           }
-      
+          const orderNumberToDelete = appointment.orderNumber;
+          const estimatedTime = appointment.estimated;
+          const endTime = appointment.endTime;
+          console.log(orderNumberToDelete);
+          
+        // Update order numbers and time for appointments with higher order numbers
+        await this.prismaService.appointments.updateMany({
+          where: {
+            hospitalId: appointment.hospitalId,
+            status: "Booked",
+            orderNumber: { gte: orderNumberToDelete },
+          }, 
+          data: {
+            orderNumber: {
+              decrement: 1,
+            },
+            estimated: {
+              set: this.calculateAdjustedTime(appointment.estimated, -20),
+            },
+            endTime: {
+              set: this.calculateAdjustedTime(appointment.endTime, -20),
+            },
+          },
+        });
           await this.prismaService.appointments.update({
             where: { id: Number(appointmentId) },
             data: { status: 'UnBook' },
@@ -152,5 +175,7 @@ export class AppointmentsService {
       }
       
     
-    
+      calculateAdjustedTime(baseTime: Date, minutes: number): Date {
+        return new Date(baseTime.getTime() + minutes * 60000); // Convert minutes to milliseconds
+      }
 }
