@@ -1,12 +1,11 @@
 
-import { Injectable, ConflictException, NotFoundException, Res, UnauthorizedException, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, ConflictException, NotFoundException, Res, UnauthorizedException, HttpException, HttpStatus, BadRequestException } from '@nestjs/common';
 import { RegisterDto } from './dto/register.dto';
 import { Users } from '.prisma/client';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { TokenPayload } from 'src/commons/constants/type';
 import { JwtPayload, SanitizedUser } from './types';
 
 
@@ -21,7 +20,15 @@ export class AuthService {
       
     
     async register(registerDto: RegisterDto)  {
-        const { phoneNumber } = registerDto;
+        const { phoneNumber,name } = registerDto;
+       
+      if (!/^\d+$/.test(phoneNumber)) {
+        throw new BadRequestException('Invalid phone number format');
+      }
+
+      if (!/^[a-zA-ZÀ-Ỹà-ỹẠ-Ỹạ-ỹĂ-Ỹă-ỹẰ-Ỷằ-ỷẠ-Ỵạ-ỵẮ-Ỷắ-ỷẤ-Ỵấ-ỵẦ-Ỵầ-ỵẢ-Ỵả-ỵẠ-Ỵạ-ỵÃ-Ỹã-ỹÈ-Ỹè-ỹẸ-Ỵẹ-ỵẾ-Ỷế-ỷỀ-Ỵề-ỵỂ-Ỷể-ỷẺ-Ỵẻ-ỵỄ-Ỹế-ỹÌ-Ỷì-ỷỊ-Ỵị-ỵÍ-Ỵí-ỵĨ-Ỹĩ-ỹÒ-Ỹò-ỹỌ-Ỵọ-ỵÓ-Ỵó-ỵỎ-Ỷỏ-ỷỐ-Ỵố-ỵỒ-Ỵồ-ỵỔ-Ỵổ-ỷỘ-Ỵộ-ỵỚ-Ỵớ-ỵỜ-Ỷờ-ỷỞ-Ỵở-ỵỠ-Ỵỡ-ỷỢ-Ỵợ-ỵỌ-Ỷọ-ỷÔ-Ỹô-ỹỌ-Ỵọ-ỵỐ-Ỵố-ỵỒ-Ỵồ-ỵỔ-Ỵổ-ỷỘ-Ỵộ-ỵỚ-Ỵớ-ỵỜ-Ỷờ-ỷỞ-Ỵở-ỵỠ-Ỵỡ-ỷỢ-Ỵợ-ỵỤ-Ỹụ-ỹỦ-Ỵủ-ỷỨ-Ỵứ-ỵỪ-Ỵừ-ỵỬ-Ỵử-ỷỰ-Ỵự-ỵ\s]+$/.test(name)) {
+        throw new BadRequestException('Invalid name format');
+      }
         const existingUser = await this.prismaService.users.findUnique({
           where: {phoneNumber},
         }) as Users;
