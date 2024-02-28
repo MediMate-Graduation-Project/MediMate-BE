@@ -15,14 +15,14 @@ model Users {
   id            Int       @id @default(autoincrement())
   createdAt     DateTime  @default(now())
   updatedAt     DateTime?  @updatedAt
-  phoneNumber   Int    @unique
+  phoneNumber   String    @unique
   password      String   
   address       String? 
   name          String?
   gender        String?
   role          UserRole @default(USER)
   birthDate     String?
-  status        UserStatus @default(ACTIVE)
+  status        Status @default(ACTIVE)
   image         String?
   refreshToken  String?
   healthInsurances HealthInsurances[]
@@ -37,7 +37,7 @@ enum UserRole {
   USER
 }
 
-enum UserStatus {
+enum Status {
   ACTIVE
   INACTIVE
 }
@@ -46,11 +46,12 @@ model Hospitals {
   id              Int              @id @default(autoincrement())
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
+  hospitalName    String     @unique
   hospitalType    String
-  specialization  Specializations? @relation(fields: [specializationId], references: [id])
-  specializationId Int
+  HospitalSpecialization HospitalSpecialization[]
+  address String
   industryCode    Int
-  status          String
+  status        Status @default(ACTIVE)
   messages        Messages[]
   appointments    Appointments[]
   reviews         Reviews[]
@@ -109,12 +110,12 @@ model Reviews {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   rating        Float
-  user          Users    @relation(fields: [userId], references: [id])
+  users Users[]
   userId        Int
-  hospital      Hospitals @relation(fields: [hospitalId], references: [id])
-  hospitalId    Int
   review        String
   date_review   DateTime
+  hospital  Hospitals @relation(fields: [hospitalId], references: [id])
+  hospitalId Int
 }
 
 model Specializations {
@@ -124,5 +125,16 @@ model Specializations {
   name      String
   clinic    String
   roomNumber String
-  hospitals Hospitals[]
+  HospitalSpecialization HospitalSpecialization[]
+}
+
+model HospitalSpecialization {
+  id              Int              @id @default(autoincrement())
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  hospital        Hospitals        @relation(fields: [hospitalId], references: [id])
+  hospitalId      Int
+  specialization  Specializations  @relation(fields: [specializationId], references: [id])
+  specializationId Int
+  @@unique([hospitalId, specializationId])
 }

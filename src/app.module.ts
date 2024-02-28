@@ -14,27 +14,26 @@ import { AppointmentsModule } from './modules/appointments/appointments.module';
 import { HealthInsurancesModule } from './modules/health-insurances/health-insurances.module';
 import { DiagnosticModule } from './modules/diagnostic/diagnostic.module';
 import { MedicalRecordModule } from './modules/medical-record/medical-record.module';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { CacheModule } from '@nestjs/cache-manager';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtAuthGuard } from './modules/auth/guards/jwt.guard';
+import { ChatCompletationApiModule } from './modules/chat-completation-api/chat-completation-api.module';
+
 
 @Module({
-  imports: [
-    // TypeOrmModule.forRootAsync({
-    //   imports: [ConfigModule],
-    //   useFactory: async (configService: ConfigService) => ({
-    //     type: 'postgres',
-    //     host: configService.get('PG_HOST'),
-    //     port: configService.get('PG_PORT'),
-    //     username: configService.get('PG_USER'),
-    //     password: configService.get('PG_PASSWORD'),
-    //     database: configService.get('PG_DB'),
-
-    //     entities:  [path.join(__dirname, '**', '*.entity{.ts,.js}')],
-    //     synchronize: true,
-    //     isGlobal: true,
-    //   }),
-    //   inject: [ConfigService], 
-    // }),
-  AuthModule, UsersModule, RolesModule, HospitalsModule, PaymentsModule, MessagesModule, SpecializationModule, ReviewsModule, AppointmentsModule, HealthInsurancesModule, DiagnosticModule, MedicalRecordModule],
+  imports: [ 
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: ['.env'],
+    }),
+  AuthModule, UsersModule, RolesModule, HospitalsModule, PaymentsModule, MessagesModule, SpecializationModule, ReviewsModule, AppointmentsModule, HealthInsurancesModule, DiagnosticModule, MedicalRecordModule ,ChatCompletationApiModule],
   controllers: [],
-  providers: [],
+  providers: [
+  //   {
+  //   provide: APP_GUARD , 
+  //   useClass: JwtAuthGuard
+  // }
+],
 })
 export class AppModule {}
