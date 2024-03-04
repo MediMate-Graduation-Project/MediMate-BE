@@ -9,11 +9,52 @@ export class HospitalsService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async getAllHospitals(): Promise<Hospitals[]> {
-    return this.prismaService.hospitals.findMany({
+    const hospitalsWithReviews = await this.prismaService.hospitals.findMany({
       where: {
         status: 'ACTIVE',
       },
+      select: {
+        id: true,
+        createdAt: true,
+        updatedAt: true,
+        hospitalName: true,
+        industryCode: true,
+        hospitalType: true,
+        address: true,
+        status: true,
+        workingSession: true,
+        introduce: true,
+        image: true,
+        reviews: {
+          select: {
+            rating: true,
+            review: true,
+            date_review: true,
+            users: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
     });
+  
+    const hospitalsWithAggregates = hospitalsWithReviews.map((hospital) => {
+      const reviewCount = hospital.reviews.length;
+      const averageRating =
+        reviewCount > 0
+          ? hospital.reviews.reduce((sum, review) => sum + review.rating, 0) / reviewCount
+          : 0;
+  
+      return {
+        ...hospital,
+        maxReviewCount: reviewCount,
+        averageRating: averageRating,
+      };
+    });
+  
+    return hospitalsWithAggregates;
   }
 
 
@@ -42,17 +83,42 @@ export class HospitalsService {
     return newHospital
   }
   async getHospitalById(id: number): Promise<Hospitals | null> {
-    const Hospital = await this.prismaService.hospitals.findUnique({
+    const hospital = await this.prismaService.hospitals.findUnique({
       where: {
         id: Number(id),
         status: 'ACTIVE',
       },
+      select: {
+        id: true,
+        createdAt: true,
+        updatedAt: true,
+        hospitalName: true,
+        industryCode: true,
+        hospitalType: true,
+        address: true,
+        introduce: true, // Include introduce in the select
+        image: true, // Include image in the select
+        status: true,
+        workingSession: true,
+        reviews: {
+          select: {
+            rating: true,
+            review: true,
+            date_review: true,
+            users: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
     });
-    if (!Hospital) {
+    if (!hospital) {
       throw new NotFoundException(`Hospital with ID ${id} not found`);
     }
 
-    return Hospital;
+    return hospital;
   }
 
   async updateHospital(

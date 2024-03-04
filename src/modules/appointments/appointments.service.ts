@@ -4,6 +4,7 @@ import { CreateAppointmentDto } from './dto/CreateAppointmentDto';
 import { Appointments } from '@prisma/client'
 import { formatAppointmentDates } from 'src/commons/utils/formatAppointmentDates';
 import { successException } from 'src/commons/Exception/succesExeption';
+import { AppointmentCountDto } from './dto/AppointmentCountDto ';
 
 
 @Injectable()
@@ -124,15 +125,39 @@ export class AppointmentsService {
         }
       }
       
+      async findMaxOrderNumberByDateAndHospital(hospitalId: number): Promise<AppointmentCountDto[]> {
+        const groupedAppointments = await this.prismaService.appointments.groupBy({
+          by: ['date'],
+          where: { hospitalId: Number(hospitalId) },
+          _max: {
+            orderNumber: true,
+          },
+        });
+        if (!groupedAppointments) {
+          throw new NotFoundException(`Appointments not found for user with ID ${hospitalId}`);
+        }
+        const result: AppointmentCountDto[] = [];
+    
+        for (const item of groupedAppointments) {
+          result.push({
+            orderNumber: item._max.orderNumber,
+            date: item.date,
+            hospitalId: hospitalId,
+          });
+        }
+    
+        return result;
+      }
+    
 
-      async deleteAppointment(appointmentId: number): Promise<string> {
+      async deleteAppointment(userId: number): Promise<string> {
         try {
-          const appointment = await this.prismaService.appointments.findUnique({
-            where: { id: Number(appointmentId), status: "Booked" },
+          const appointment = await this.prismaService.appointments.findFirst({
+            where: { userId: Number(userId), status: "Booked" },
           });
       
           if (!appointment) {
-            throw new NotFoundException(`Appointment with ID ${appointmentId} not found`);
+            throw new NotFoundException(`Appointment with ID ${userId} not found`);
           }
           const orderNumberToDelete = appointment.orderNumber;
           const estimatedTime = appointment.estimated;
@@ -158,8 +183,8 @@ export class AppointmentsService {
             },
           },
         });
-          await this.prismaService.appointments.update({
-            where: { id: Number(appointmentId) },
+          await this.prismaService.appointments.updateMany({
+            where: { userId: Number(userId) },
             data: { status: 'UnBook' },
           });
       

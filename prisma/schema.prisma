@@ -51,7 +51,10 @@ model Hospitals {
   HospitalSpecialization HospitalSpecialization[]
   address String
   industryCode    Int
+  introduce String?
+  image String?
   status        Status @default(ACTIVE)
+  workingSession String?
   messages        Messages[]
   appointments    Appointments[]
   reviews         Reviews[]
@@ -110,7 +113,7 @@ model Reviews {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   rating        Float
-  users Users[]
+  users Users @relation(fields: [userId], references: [id])
   userId        Int
   review        String
   date_review   DateTime
