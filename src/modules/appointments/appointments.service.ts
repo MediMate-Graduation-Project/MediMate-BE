@@ -163,30 +163,39 @@ export class AppointmentsService {
           const estimatedTime = appointment.estimated;
           const endTime = appointment.endTime;
           console.log(orderNumberToDelete);
-          
+          console.log(estimatedTime);
+          console.log(endTime);
         // Update order numbers and time for appointments with higher order numbers
-        await this.prismaService.appointments.updateMany({
+        const appointmentsToUpdate = await this.prismaService.appointments.findMany({
           where: {
             hospitalId: appointment.hospitalId,
             status: "Booked",
             orderNumber: { gte: orderNumberToDelete },
-          }, 
-          data: {
-            orderNumber: {
-              decrement: 1,
-            },
-            estimated: {
-              set: this.calculateAdjustedTime(appointment.estimated, -20),
-            },
-            endTime: {
-              set: this.calculateAdjustedTime(appointment.endTime, -20),
-            },
           },
         });
-          await this.prismaService.appointments.updateMany({
-            where: { userId: Number(userId) },
-            data: { status: 'UnBook' },
-          });
+    
+        // Update each fetched appointment
+        await Promise.all(
+          appointmentsToUpdate.map(async (appointmentToUpdate) => {
+            await this.prismaService.appointments.update({
+              where: { id: appointmentToUpdate.id },
+              data: {
+                orderNumber: appointmentToUpdate.orderNumber - 1,
+                estimated: this.calculateAdjustedTime(
+                  appointmentToUpdate.estimated,
+                  -20
+                ),
+                endTime: this.calculateAdjustedTime(appointmentToUpdate.endTime, -20),
+              },
+            });
+          })
+        );
+    
+        // Update the status for the original appointment
+        await this.prismaService.appointments.updateMany({
+          where: { userId: Number(userId) },
+          data: { status: 'UnBook' },
+        });
       
           return 'Delete successful';
         } catch (error) {

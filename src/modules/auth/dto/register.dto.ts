@@ -7,7 +7,7 @@ export class RegisterDto {
     name:string;
 
     @IsNotEmpty({ message: 'PhoneNumber is required' })
-    @Length(10 , undefined, { message: 'Phone number must have 10 or 11 digits' })
+    @Length(10 , 11, { message: 'Phone number must have 10 or 11 digits' })
     phoneNumber: string;
   
     @IsNotEmpty({ message: 'password is required' })

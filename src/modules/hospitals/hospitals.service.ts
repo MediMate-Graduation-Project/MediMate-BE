@@ -50,7 +50,7 @@ export class HospitalsService {
       return {
         ...hospital,
         maxReviewCount: reviewCount,
-        averageRating: averageRating,
+        averageRating: Math.floor(averageRating / 2) * 2,
       };
     });
   
@@ -82,44 +82,59 @@ export class HospitalsService {
     });
     return newHospital
   }
+
   async getHospitalById(id: number): Promise<Hospitals | null> {
-    const hospital = await this.prismaService.hospitals.findUnique({
-      where: {
-        id: Number(id),
-        status: 'ACTIVE',
-      },
-      select: {
-        id: true,
-        createdAt: true,
-        updatedAt: true,
-        hospitalName: true,
-        industryCode: true,
-        hospitalType: true,
-        address: true,
-        introduce: true, // Include introduce in the select
-        image: true, // Include image in the select
-        status: true,
-        workingSession: true,
-        reviews: {
-          select: {
-            rating: true,
-            review: true,
-            date_review: true,
-            users: {
-              select: {
-                name: true,
-              },
+  const hospitalWithReviews = await this.prismaService.hospitals.findUnique({
+    where: {
+      id: Number(id),
+      status: 'ACTIVE',
+    },
+    select: {
+      id: true,
+      createdAt: true,
+      updatedAt: true,
+      hospitalName: true,
+      industryCode: true,
+      hospitalType: true,
+      address: true,
+      status: true,
+      workingSession: true,
+      introduce: true,
+      image: true,
+      reviews: {
+        select: {
+          rating: true,
+          review: true,
+          date_review: true,
+          users: {
+            select: {
+              name: true,
             },
           },
         },
       },
-    });
-    if (!hospital) {
-      throw new NotFoundException(`Hospital with ID ${id} not found`);
-    }
+    },
+  });
 
-    return hospital;
+  if (!hospitalWithReviews) {
+    return null; 
   }
+
+  const reviewCount = hospitalWithReviews.reviews.length;
+  const averageRating =
+    reviewCount > 0
+      ? hospitalWithReviews.reviews.reduce((sum, review) => sum + review.rating, 0) / reviewCount
+      : 0;
+
+  const hospitalWithAggregates = {
+    ...hospitalWithReviews,
+    maxReviewCount: reviewCount,
+    averageRating: Math.floor(averageRating / 2) * 2,
+  };
+
+  return hospitalWithAggregates;
+}
+
 
   async updateHospital(
     id: number,

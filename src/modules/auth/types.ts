@@ -8,6 +8,7 @@ export interface SanitizedUser {
     id: number,
     phoneNumber?:string,
     password?:string,
+    name:string,
     role: string,
     refreshToken?: string,
 
