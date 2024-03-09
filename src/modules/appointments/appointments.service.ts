@@ -58,7 +58,7 @@ export class AppointmentsService {
                 estimated: estimated.toISOString(), 
                 endTime: endTime.toISOString(), 
                 date: isoDate.toISOString(), 
-                status: 'Booked',
+                status: 'Created',
               },
             });
       
@@ -83,6 +83,7 @@ export class AppointmentsService {
               status: 'Booked',
             },
             select: {
+              id:true,
               hospital: {
                 select: {
                   hospitalName: true,
@@ -150,66 +151,27 @@ export class AppointmentsService {
       }
     
 
-      async deleteAppointment(userId: number): Promise<string> {
-        try {
-          const appointment = await this.prismaService.appointments.findFirst({
-            where: { userId: Number(userId), status: "Booked" },
-          });
-      
-          if (!appointment) {
-            throw new NotFoundException(`Appointment with ID ${userId} not found`);
-          }
-          const orderNumberToDelete = appointment.orderNumber;
-          const estimatedTime = appointment.estimated;
-          const endTime = appointment.endTime;
-          console.log(orderNumberToDelete);
-          console.log(estimatedTime);
-          console.log(endTime);
-        // Update order numbers and time for appointments with higher order numbers
-        const appointmentsToUpdate = await this.prismaService.appointments.findMany({
-          where: {
-            hospitalId: appointment.hospitalId,
-            status: "Booked",
-            orderNumber: { gte: orderNumberToDelete },
-          },
+      async deleteAppointment(Id: number): Promise<string> {
+        const deletedUser = await this.prismaService.appointments.update({
+          where: { id: Number(Id) },
+          data: { status: "Unbook" }, 
         });
     
-        // Update each fetched appointment
-        await Promise.all(
-          appointmentsToUpdate.map(async (appointmentToUpdate) => {
-            await this.prismaService.appointments.update({
-              where: { id: appointmentToUpdate.id },
-              data: {
-                orderNumber: appointmentToUpdate.orderNumber - 1,
-                estimated: this.calculateAdjustedTime(
-                  appointmentToUpdate.estimated,
-                  -20
-                ),
-                endTime: this.calculateAdjustedTime(appointmentToUpdate.endTime, -20),
-              },
-            });
-          })
-        );
-    
-        // Update the status for the original appointment
-        await this.prismaService.appointments.updateMany({
-          where: { userId: Number(userId) },
-          data: { status: 'UnBook' },
-        });
-      
-          return 'Delete successful';
-        } catch (error) {
-          if (error instanceof HttpException) {
-            throw error;
-          } else {
-            console.error('Error deleting appointment:', error);
-            throw new Error('Error deleting appointment');
-          }
+        if (!deletedUser) {
+          throw new NotFoundException(`User with ID ${Id} not found`);
         }
+        throw new successException("delete user succesfull");
       }
-      
+
+      async updateAppointment(id: number): Promise<Appointments | null> {
+        const updatedUser = await this.prismaService.appointments.update({
+          where: { id: Number(id) },
+          data:{ status: 'Booked' }
+        });
     
-      calculateAdjustedTime(baseTime: Date, minutes: number): Date {
-        return new Date(baseTime.getTime() + minutes * 60000); // Convert minutes to milliseconds
+        if (!updatedUser) {
+          throw new NotFoundException(`Appointment with ID ${id} not found`);
+        }
+        return updatedUser;
       }
 }

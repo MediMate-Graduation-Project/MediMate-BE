@@ -13,9 +13,9 @@ constructor(private readonly config:ConfigService){
     this.genAiProModel = this.genAI.getGenerativeModel({model:"gemini-pro"})
 }   
 
-async getPromptResponse(prompt: string): Promise<string> {
+async getPromptResponse(diagnostic: string): Promise<string> {
     try {
-        const result = await this.genAiProModel.generateContent(prompt);
+        const result = await this.genAiProModel.generateContent(diagnostic);
         const response = await result.response;
         const text = response.text();
         console.log(text);

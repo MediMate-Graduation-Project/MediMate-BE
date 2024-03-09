@@ -12,7 +12,7 @@ export class HospitalsController {
     return this.hospitalsService.getAllHospitals();
   }
 
-  @Post('create')
+  @Post('')
    register(@Body() body:CreateHospitalDto) {
     return this.hospitalsService.createHospital(body);
   }
