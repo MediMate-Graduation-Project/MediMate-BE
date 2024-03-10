@@ -17,12 +17,12 @@ export class AppointmentsController {
 
   @Get('count/:hospitalId') 
   async countOrdersByDateAndHospital(@Param('hospitalId') hospitalId: number): Promise<AppointmentCountDto[]> {
-    return this.appointmentsService.findMaxOrderNumberByDateAndHospital(hospitalId);
+    return await this.appointmentsService.findMaxOrderNumberByDateAndHospital(hospitalId);
   }
 
   @Patch(':id')
   async updateUser(@Param('id') id: number): Promise<Appointments | null> {
-    return this.appointmentsService.updateAppointment(id);
+    return await this.appointmentsService.updateAppointment(id);
   }
   
   @Post('book')
@@ -35,6 +35,6 @@ export class AppointmentsController {
   
   @Delete(':id')
   async deleteAppointment(@Param('id') id: number  ): Promise<string> {
-    return this.appointmentsService.deleteAppointment(id);
+    return await this.appointmentsService.deleteAppointment(id);
   }
 }
