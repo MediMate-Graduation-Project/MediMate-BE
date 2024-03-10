@@ -9,26 +9,26 @@ export class HospitalsController {
 
   @Get()
   async getAllHospital(): Promise<Hospitals[]> {
-    return this.hospitalsService.getAllHospitals();
+    return await this.hospitalsService.getAllHospitals();
   }
 
-  @Post('create')
-   register(@Body() body:CreateHospitalDto) {
-    return this.hospitalsService.createHospital(body);
+  @Post('')
+   async createHospital(@Body() body:CreateHospitalDto) {
+    return await this.hospitalsService.createHospital(body);
   }
 
   @Get(':id')
   async getHospitalById(@Param('id') id: number): Promise<Hospitals | null> {
-    return this.hospitalsService.getHospitalById(id);
+    return await this.hospitalsService.getHospitalById(id);
   }
 
   @Patch(':id')
   async updateHospital(@Param('id') id: number, @Body() data: Partial<Hospitals>): Promise<Hospitals | null> {
-    return this.hospitalsService.updateHospital(id, data);
+    return await this.hospitalsService.updateHospital(id, data);
   }
 
   @Delete(':id')
   async deleteHospital(@Param('id') id: number): Promise<void> {
-    return this.hospitalsService.deleteHospital(id);
+    return await this.hospitalsService.deleteHospital(id);
   }
 }

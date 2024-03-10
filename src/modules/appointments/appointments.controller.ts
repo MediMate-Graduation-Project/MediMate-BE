@@ -1,7 +1,9 @@
-import { Controller, Post,Get, Body, ValidationPipe, Param, Delete, Res, HttpStatus } from '@nestjs/common';
+import { Controller, Post,Get, Body, ValidationPipe, Param, Delete, Res, HttpStatus, Query, Patch } from '@nestjs/common';
 import { AppointmentsService } from './appointments.service';
 import { CreateAppointmentDto } from './dto/CreateAppointmentDto';
 import { Response as ExpressResponse } from 'express';
+import { Appointments } from '@prisma/client';
+import { AppointmentCountDto } from './dto/AppointmentCountDto ';
 
 @Controller('appointments')
 export class AppointmentsController {
@@ -13,6 +15,16 @@ export class AppointmentsController {
       return appointment;
   }
 
+  @Get('count/:hospitalId') 
+  async countOrdersByDateAndHospital(@Param('hospitalId') hospitalId: number): Promise<AppointmentCountDto[]> {
+    return await this.appointmentsService.findMaxOrderNumberByDateAndHospital(hospitalId);
+  }
+
+  @Patch(':id')
+  async updateUser(@Param('id') id: number): Promise<Appointments | null> {
+    return await this.appointmentsService.updateAppointment(id);
+  }
+  
   @Post('book')
   async bookAppointment(
     @Body(new ValidationPipe()) dto: CreateAppointmentDto,
@@ -22,8 +34,7 @@ export class AppointmentsController {
   }
   
   @Delete(':id')
-  async voiddeleteAppointment(@Param('id') id: number  ): Promise<string> {
-    const deleteApointment = this.appointmentsService.deleteAppointment(id);
-    return deleteApointment
+  async deleteAppointment(@Param('id') id: number  ): Promise<string> {
+    return await this.appointmentsService.deleteAppointment(id);
   }
 }

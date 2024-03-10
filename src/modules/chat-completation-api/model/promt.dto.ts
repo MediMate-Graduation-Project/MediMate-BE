@@ -1,3 +1,3 @@
 export interface PromptBody{
-    prompt:string
+    diagnose:string
 }

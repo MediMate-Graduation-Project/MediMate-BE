@@ -7,9 +7,9 @@ export class ChatCompletationApiController{
     constructor (private readonly service:ChatCompletationApiService){}
 
     @HttpCode(HttpStatus.OK)
-    @Post("prompt")
+    @Post("/diagnose")
     getpromtResponse(@Body() body: PromptBody){
-        return this.service.getPromptResponse(body.prompt)
+        return this.service.getPromptResponse(body.diagnose)
     }
  
 }

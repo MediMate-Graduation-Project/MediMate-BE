@@ -4,6 +4,7 @@ import { CreateAppointmentDto } from './dto/CreateAppointmentDto';
 import { Appointments } from '@prisma/client'
 import { formatAppointmentDates } from 'src/commons/utils/formatAppointmentDates';
 import { successException } from 'src/commons/Exception/succesExeption';
+import { AppointmentCountDto } from './dto/AppointmentCountDto ';
 
 
 @Injectable()
@@ -57,7 +58,7 @@ export class AppointmentsService {
                 estimated: estimated.toISOString(), 
                 endTime: endTime.toISOString(), 
                 date: isoDate.toISOString(), 
-                status: 'Booked',
+                status: 'Created',
               },
             });
       
@@ -82,6 +83,7 @@ export class AppointmentsService {
               status: 'Booked',
             },
             select: {
+              id:true,
               hospital: {
                 select: {
                   hospitalName: true,
@@ -124,58 +126,52 @@ export class AppointmentsService {
         }
       }
       
-
-      async deleteAppointment(appointmentId: number): Promise<string> {
-        try {
-          const appointment = await this.prismaService.appointments.findUnique({
-            where: { id: Number(appointmentId), status: "Booked" },
-          });
-      
-          if (!appointment) {
-            throw new NotFoundException(`Appointment with ID ${appointmentId} not found`);
-          }
-          const orderNumberToDelete = appointment.orderNumber;
-          const estimatedTime = appointment.estimated;
-          const endTime = appointment.endTime;
-          console.log(orderNumberToDelete);
-          
-        // Update order numbers and time for appointments with higher order numbers
-        await this.prismaService.appointments.updateMany({
-          where: {
-            hospitalId: appointment.hospitalId,
-            status: "Booked",
-            orderNumber: { gte: orderNumberToDelete },
-          }, 
-          data: {
-            orderNumber: {
-              decrement: 1,
-            },
-            estimated: {
-              set: this.calculateAdjustedTime(appointment.estimated, -20),
-            },
-            endTime: {
-              set: this.calculateAdjustedTime(appointment.endTime, -20),
-            },
+      async findMaxOrderNumberByDateAndHospital(hospitalId: number): Promise<AppointmentCountDto[]> {
+        const groupedAppointments = await this.prismaService.appointments.groupBy({
+          by: ['date'],
+          where: { hospitalId: Number(hospitalId) },
+          _max: {
+            orderNumber: true,
           },
         });
-          await this.prismaService.appointments.update({
-            where: { id: Number(appointmentId) },
-            data: { status: 'UnBook' },
-          });
-      
-          return 'Delete successful';
-        } catch (error) {
-          if (error instanceof HttpException) {
-            throw error;
-          } else {
-            console.error('Error deleting appointment:', error);
-            throw new Error('Error deleting appointment');
-          }
+        if (!groupedAppointments) {
+          throw new NotFoundException(`Appointments not found for user with ID ${hospitalId}`);
         }
-      }
-      
+        const result: AppointmentCountDto[] = [];
     
-      calculateAdjustedTime(baseTime: Date, minutes: number): Date {
-        return new Date(baseTime.getTime() + minutes * 60000); // Convert minutes to milliseconds
+        for (const item of groupedAppointments) {
+          result.push({
+            orderNumber: item._max.orderNumber,
+            date: item.date,
+            hospitalId: hospitalId,
+          });
+        }
+    
+        return result;
+      }
+    
+
+      async deleteAppointment(Id: number): Promise<string> {
+        const deletedUser = await this.prismaService.appointments.update({
+          where: { id: Number(Id) },
+          data: { status: "Unbook" }, 
+        });
+    
+        if (!deletedUser) {
+          throw new NotFoundException(`User with ID ${Id} not found`);
+        }
+        throw new successException("delete user succesfull");
+      }
+
+      async updateAppointment(id: number): Promise<Appointments | null> {
+        const updatedUser = await this.prismaService.appointments.update({
+          where: { id: Number(id) },
+          data:{ status: 'Booked' }
+        });
+    
+        if (!updatedUser) {
+          throw new NotFoundException(`Appointment with ID ${id} not found`);
+        }
+        return updatedUser;
       }
 }

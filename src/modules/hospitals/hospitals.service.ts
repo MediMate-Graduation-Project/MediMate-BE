@@ -9,11 +9,41 @@ export class HospitalsService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async getAllHospitals(): Promise<Hospitals[]> {
-    return this.prismaService.hospitals.findMany({
+    const hospitalsWithReviews = await this.prismaService.hospitals.findMany({
       where: {
         status: 'ACTIVE',
       },
+      include: {
+        reviews: {
+          select: {
+            rating: true,
+            review: true,
+            date_review: true,
+            users: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
     });
+  
+    const hospitalsWithAggregates = hospitalsWithReviews.map((hospital) => {
+      const reviewCount = hospital.reviews.length;
+      const averageRating =
+        reviewCount > 0
+          ? hospital.reviews.reduce((sum, review) => sum + review.rating, 0) / reviewCount
+          : 0;
+  
+      return {
+        ...hospital,
+        maxReviewCount: reviewCount,
+        averageRating: Math.floor(averageRating / 2) * 2,
+      };
+    });
+  
+    return hospitalsWithAggregates;
   }
 
 
@@ -41,19 +71,48 @@ export class HospitalsService {
     });
     return newHospital
   }
-  async getHospitalById(id: number): Promise<Hospitals | null> {
-    const Hospital = await this.prismaService.hospitals.findUnique({
-      where: {
-        id: Number(id),
-        status: 'ACTIVE',
-      },
-    });
-    if (!Hospital) {
-      throw new NotFoundException(`Hospital with ID ${id} not found`);
-    }
 
-    return Hospital;
+  async getHospitalById(id: number): Promise<Hospitals | null> {
+  const hospitalWithReviews = await this.prismaService.hospitals.findUnique({
+    where: {
+      id: Number(id),
+      status: 'ACTIVE',
+    },
+    include: {
+      reviews: {
+        select: {
+          rating: true,
+          review: true,
+          date_review: true,
+          users: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!hospitalWithReviews) {
+    return null; 
   }
+
+  const reviewCount = hospitalWithReviews.reviews.length;
+  const averageRating =
+    reviewCount > 0
+      ? hospitalWithReviews.reviews.reduce((sum, review) => sum + review.rating, 0) / reviewCount
+      : 0;
+
+  const hospitalWithAggregates = {
+    ...hospitalWithReviews,
+    maxReviewCount: reviewCount,
+    averageRating: Math.floor(averageRating / 2) * 2,
+  };
+
+  return hospitalWithAggregates;
+}
+
 
   async updateHospital(
     id: number,

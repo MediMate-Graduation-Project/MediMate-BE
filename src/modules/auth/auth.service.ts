@@ -114,8 +114,8 @@ export class AuthService {
         if (!isPasswordValid) {
           throw new UnauthorizedException('Invalid credentials');
         }
-        const {id ,role} = user 
-        return {id ,role}
+        const {id ,role,name} = user 
+        return {id ,role ,name}
       }
 
       async validateJwtUser(payload:JwtPayload):Promise<SanitizedUser|null>{
@@ -123,8 +123,8 @@ export class AuthService {
         if(!user){
           return null
         }
-        const {id,role} = user 
-        return {id,role}
+        const {id,role,name} = user 
+        return {id,role,name}
       }
 }
 

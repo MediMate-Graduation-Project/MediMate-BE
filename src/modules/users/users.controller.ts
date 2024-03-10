@@ -7,21 +7,21 @@ export class UsersController {
 
   @Get()
   async getAllUsers(): Promise<Users[]> {
-    return this.userService.getAllUsers();
+    return await this.userService.getAllUsers();
   }
 
   @Get(':id')
   async getUserById(@Param('id') id: number): Promise<Users | null> {
-    return this.userService.getUserById(id);
+    return await this.userService.getUserById(id);
   }
 
   @Patch(':id')
   async updateUser(@Param('id') id: number, @Body() data: Partial<Users>): Promise<Users | null> {
-    return this.userService.updateUser(id, data);
+    return await this.userService.updateUser(id, data);
   }
 
   @Delete(':id')
   async deleteUser(@Param('id') id: number): Promise<void> {
-    return this.userService.deleteUser(id);
+    return await this.userService.deleteUser(id);
   }
 }
