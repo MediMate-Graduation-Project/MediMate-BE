@@ -13,18 +13,7 @@ export class HospitalsService {
       where: {
         status: 'ACTIVE',
       },
-      select: {
-        id: true,
-        createdAt: true,
-        updatedAt: true,
-        hospitalName: true,
-        industryCode: true,
-        hospitalType: true,
-        address: true,
-        status: true,
-        workingSession: true,
-        introduce: true,
-        image: true,
+      include: {
         reviews: {
           select: {
             rating: true,
@@ -89,18 +78,7 @@ export class HospitalsService {
       id: Number(id),
       status: 'ACTIVE',
     },
-    select: {
-      id: true,
-      createdAt: true,
-      updatedAt: true,
-      hospitalName: true,
-      industryCode: true,
-      hospitalType: true,
-      address: true,
-      status: true,
-      workingSession: true,
-      introduce: true,
-      image: true,
+    include: {
       reviews: {
         select: {
           rating: true,

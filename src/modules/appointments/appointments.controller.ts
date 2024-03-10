@@ -34,7 +34,7 @@ export class AppointmentsController {
   }
   
   @Delete(':id')
-  async voiddeleteAppointment(@Param('id') id: number  ): Promise<string> {
+  async deleteAppointment(@Param('id') id: number  ): Promise<string> {
     return this.appointmentsService.deleteAppointment(id);
   }
 }
