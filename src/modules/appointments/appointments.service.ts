@@ -5,11 +5,15 @@ import { Appointments } from '@prisma/client'
 import { formatAppointmentDates } from 'src/commons/utils/formatAppointmentDates';
 import { successException } from 'src/commons/Exception/succesExeption';
 import { AppointmentCountDto } from './dto/AppointmentCountDto ';
+import { format } from 'date-fns';
+import { Server } from 'socket.io';
+
 
 
 @Injectable()
 export class AppointmentsService {
-    constructor(private prismaService: PrismaService) {}
+    constructor(private readonly prismaService: PrismaService,
+                ) {}
    
     async bookAppointment(dto: CreateAppointmentDto) {
         try {
@@ -151,7 +155,7 @@ export class AppointmentsService {
       }
     
 
-      async deleteAppointment(Id: number): Promise<string> {
+      async deleteAppointmentByUser(Id: number): Promise<string> {
         const deletedUser = await this.prismaService.appointments.update({
           where: { id: Number(Id) },
           data: { status: "Unbook" }, 
@@ -160,6 +164,28 @@ export class AppointmentsService {
         if (!deletedUser) {
           throw new NotFoundException(`User with ID ${Id} not found`);
         }
+        throw new successException("delete user succesfull");
+      }
+
+      async deleteAppointmentByDoctor(hospitalId: number): Promise<string> {
+        const currentDate = format(new Date(), "yyyy-MM-dd'T'00:00:00.000'Z'");
+        const deletedUser = await this.prismaService.appointments.findFirst({
+          where: { hospitalId: Number(hospitalId),
+                   status: 'Booked',
+                   date:currentDate
+           },
+        });
+        console.log(deletedUser)
+        if (!deletedUser) {
+          throw new NotFoundException(`User with ID ${hospitalId} not found`);
+        }
+        console.log(deletedUser.id)
+        await this.prismaService.appointments.update({
+          where: { id: Number( deletedUser.id) },
+          data: {
+            status: 'Unbook',
+          },
+        });
         throw new successException("delete user succesfull");
       }
 
@@ -174,4 +200,43 @@ export class AppointmentsService {
         }
         return updatedUser;
       }
+
+      async getActualOrderNumberHospital(hospitalId: number): Promise<number> {
+        const currentDate = format(new Date(), "yyyy-MM-dd'T'00:00:00.000'Z'");
+      
+        const appointment = await this.prismaService.appointments.findFirst({
+          where: {
+            hospitalId: Number(hospitalId),
+            date: currentDate,
+            status: 'Booked',
+          },
+          orderBy: {
+            orderNumber: 'asc',
+          },
+        });
+        if(!appointment){
+          return 0
+        }
+        console.log(appointment)
+        return appointment.orderNumber
+      }  
+
+      async getAppointmentByHospital(hospitalId: number): Promise<Appointments[]> {
+        const currentDate = format(new Date(), "yyyy-MM-dd'T'00:00:00.000'Z'");
+      
+        const appointment = await this.prismaService.appointments.findMany({
+          where: {
+            hospitalId: Number(hospitalId),
+            date: currentDate,
+            status: 'Booked',
+          },
+          orderBy: {
+            orderNumber: 'asc',
+          },
+        });
+        if (!appointment.length) {
+          return []; 
+        }
+        return appointment
+      }  
 }

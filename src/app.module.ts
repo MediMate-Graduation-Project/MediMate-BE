@@ -21,15 +21,17 @@ import { JwtAuthGuard } from './modules/auth/guards/jwt.guard';
 import { ChatCompletationApiModule } from './modules/chat-completation-api/chat-completation-api.module';
 
 
+
 @Module({
-  imports: [ 
+  imports: [  
+     
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: ['.env'],
     }),
   AuthModule, UsersModule, RolesModule, HospitalsModule, PaymentsModule, MessagesModule, SpecializationModule, ReviewsModule, AppointmentsModule, HealthInsurancesModule, DiagnosticModule, MedicalRecordModule ,ChatCompletationApiModule],
   controllers: [],
-  providers: [
+  providers: [ 
   //   {
   //   provide: APP_GUARD , 
   //   useClass: JwtAuthGuard
