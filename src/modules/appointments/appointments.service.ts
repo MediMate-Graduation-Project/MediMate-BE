@@ -8,6 +8,10 @@ import { AppointmentCountDto } from './dto/AppointmentCountDto ';
 import { format } from 'date-fns';
 import { Server } from 'socket.io';
 
+interface OrderInfo {
+  actualNumber: number;
+  nextThreeAppointments: Appointments[];
+}
 
 
 @Injectable()
@@ -201,25 +205,32 @@ export class AppointmentsService {
         return updatedUser;
       }
 
-      async getActualOrderNumberHospital(hospitalId: number): Promise<number> {
+      async getActualOrderNumberHospital(hospitalId: number): Promise<OrderInfo> {
         const currentDate = format(new Date(), "yyyy-MM-dd'T'00:00:00.000'Z'");
       
-        const appointment = await this.prismaService.appointments.findFirst({
-          where: {
-            hospitalId: Number(hospitalId),
-            date: currentDate,
-            status: 'Booked',
-          },
-          orderBy: {
-            orderNumber: 'asc',
-          },
+        const appointments = await this.prismaService.appointments.findMany({
+            where: {
+                hospitalId: Number(hospitalId),
+                date: currentDate,
+                status: 'Booked',
+            },
+            orderBy: {
+                orderNumber: 'asc',
+            },
+            take: 4, // Fetching the actualNumber and the next 3 appointments
         });
-        if(!appointment){
-          return 0
+    
+        if (appointments.length === 0) {
+            return { actualNumber: 0, nextThreeAppointments: [] }; // Return 0 and an empty array if no appointments are found
         }
-        console.log(appointment)
-        return appointment.orderNumber
-      }  
+    
+        console.log(appointments);
+    
+        const actualNumber = appointments[0].orderNumber;
+        const nextThreeAppointments = appointments.slice(1); // Exclude the actualNumber
+    
+        return { actualNumber, nextThreeAppointments };
+    }
 
       async getAppointmentByHospital(hospitalId: number): Promise<Appointments[]> {
         const currentDate = format(new Date(), "yyyy-MM-dd'T'00:00:00.000'Z'");

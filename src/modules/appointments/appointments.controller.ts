@@ -48,7 +48,7 @@ export class AppointmentsController {
     return await this.appointmentsService.deleteAppointmentByDoctor(hospitalId);
   }
   @Get('actual-ordernumber/:hospitalId')
-  async getActualOrderNumberHospital(@Param('hospitalId') hospitalId: number): Promise<number> {
+  async getActualOrderNumberHospital(@Param('hospitalId') hospitalId: number): Promise<{ actualNumber: number, nextThreeAppointments: Appointments[] }> {
     return await this.appointmentsService.getActualOrderNumberHospital(hospitalId);
   }
 }
