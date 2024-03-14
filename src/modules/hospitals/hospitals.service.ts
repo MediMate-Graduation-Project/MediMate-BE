@@ -66,10 +66,14 @@ export class HospitalsService {
 
       const result = matchingHospitals.map(matchingHospital => {
         const nearbyHospital = nearbyHospitals.find(nearby => nearby.name === matchingHospital.hospitalName);
-        return {
-          ...matchingHospital,
-          distance: nearbyHospital ? nearbyHospital.distance : null,
-        };
+        let distanceInKilometers = nearbyHospital ? nearbyHospital.distance / 1000 : null;
+        if (distanceInKilometers !== null) {
+          distanceInKilometers = Math.round(distanceInKilometers * 10) / 10;
+      }
+      return {
+        ...matchingHospital,
+        distance: distanceInKilometers,
+      };
       });
 
       return result;
