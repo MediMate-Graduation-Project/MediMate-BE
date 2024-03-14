@@ -3,6 +3,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { Hospitals } from '@prisma/client';
 import { successException } from 'src/commons/Exception/succesExeption';
 import { CreateHospitalDto } from './dto/CreateHospitalDto';
+import axios from 'axios';
+require('dotenv').config();
 
 @Injectable()
 export class HospitalsService {
@@ -44,6 +46,37 @@ export class HospitalsService {
     });
   
     return hospitalsWithAggregates;
+  }
+
+  
+  async getNearbyHospitals(lat: number, lon: number): Promise<Hospitals[]> {
+    const radius = 1000;
+    const apiKey = process.env.MAP_API_KEY;  
+
+    try {
+      const response = await axios.get(`https://us1.locationiq.com/v1/nearby?key=${apiKey}&lat=${lat}&lon=${lon}&tag=hospital&radius=${radius}`);
+      const nearbyHospitals = response.data;
+      // console.log(nearbyHospitals)
+      const databaseHospitals = await this.prismaService.hospitals.findMany();
+      // console.log(databaseHospitals)
+      
+      const matchingHospitals = databaseHospitals.filter(dbHospital => {
+        return nearbyHospitals.some(nearbyHospital => nearbyHospital.name === dbHospital.hospitalName);
+      });
+
+      const result = matchingHospitals.map(matchingHospital => {
+        const nearbyHospital = nearbyHospitals.find(nearby => nearby.name === matchingHospital.hospitalName);
+        return {
+          ...matchingHospital,
+          distance: nearbyHospital ? nearbyHospital.distance : null,
+        };
+      });
+
+      return result;
+    } catch (error) {
+      throw new NotFoundException('Nearby hospitals not found');
+    }
+  
   }
 
 
