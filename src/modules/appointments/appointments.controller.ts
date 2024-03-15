@@ -20,10 +20,7 @@ export class AppointmentsController {
     return await this.appointmentsService.findMaxOrderNumberByDateAndHospital(hospitalId);
   }
 
-  @Get('hospital/:hospitalId') 
-  async getAppointmentByHospital(@Param('hospitalId') hospitalId: number): Promise<AppointmentCountDto[]> {
-    return await this.appointmentsService.getAppointmentByHospital(hospitalId);
-  }
+  
 
   @Patch(':id')
   async updateUser(@Param('id') id: number): Promise<Appointments | null> {
@@ -40,15 +37,12 @@ export class AppointmentsController {
   
   @Delete(':id')
   async deleteAppointmentByUser(@Param('id') id: number  ): Promise<string> {
-    return await this.appointmentsService.deleteAppointmentByUser(id);
+    return await this.appointmentsService.deleteAppointment(id);
   }
 
   @Delete('doctor/:hospitalId')
   async deleteAppointmentByDoctor(@Param('hospitalId') hospitalId: number  ): Promise<string> {
     return await this.appointmentsService.deleteAppointmentByDoctor(hospitalId);
   }
-  @Get('actual-ordernumber/:hospitalId')
-  async getActualOrderNumberHospital(@Param('hospitalId') hospitalId: number): Promise<{ actualNumber: number, nextThreeAppointments: Appointments[] }> {
-    return await this.appointmentsService.getActualOrderNumberHospital(hospitalId);
-  }
+  
 }

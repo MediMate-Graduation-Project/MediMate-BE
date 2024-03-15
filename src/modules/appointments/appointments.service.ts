@@ -6,12 +6,9 @@ import { formatAppointmentDates } from 'src/commons/utils/formatAppointmentDates
 import { successException } from 'src/commons/Exception/succesExeption';
 import { AppointmentCountDto } from './dto/AppointmentCountDto ';
 import { format } from 'date-fns';
-import { Server } from 'socket.io';
 
-interface OrderInfo {
-  actualNumber: number;
-  nextThreeAppointments: Appointments[];
-}
+
+
 
 
 @Injectable()
@@ -23,10 +20,11 @@ export class AppointmentsService {
         try {
           const { userId, hospitalId, date } = dto;
           const isoDate = new Date(date + "T00:00:00.00Z");
-          const currentDate = new Date(); 
-          console.log(currentDate)
-          console.log(isoDate)
-          if (isoDate < currentDate) {
+          const currentDate = new Date();  
+          const minAllowedDate = new Date(currentDate);
+          minAllowedDate.setHours(minAllowedDate.getHours() + 4);
+
+          if (isoDate < minAllowedDate) {
             throw new HttpException('Invalid appointment date. Please choose a date in the future.',HttpStatus.BAD_REQUEST);
           }
           const existingHospital = await this.prismaService.hospitals.findUnique({
@@ -45,16 +43,12 @@ export class AppointmentsService {
           });
       
           const orderNumber = existingAppointmentsCount === 0 ? 1 : existingAppointmentsCount + 1;
-      
           const baseTime = new Date(`${date}T15:00:00`);
           const incrementMinutes = (orderNumber - 1) * 20;
-      
           const estimated = new Date(baseTime);
           estimated.setMinutes(baseTime.getMinutes() + incrementMinutes);
-      
           const endTime = new Date(estimated);
           endTime.setMinutes(endTime.getMinutes() + 20);
-      
           const isValidDate = (date: Date) => !isNaN(date.getTime());
       
           if (isValidDate(estimated) && isValidDate(endTime)) {
@@ -94,6 +88,7 @@ export class AppointmentsService {
               id:true,
               hospital: {
                 select: {
+                  id:true,
                   hospitalName: true,
                   HospitalSpecialization: {
                     select: {
@@ -123,7 +118,6 @@ export class AppointmentsService {
           appointment.endTime = new Date(appointment.endTime);
           appointment.date = new Date(appointment.date);
           formatAppointmentDates(appointment);
-      
           return appointment;
         } catch (error) {
           if (error instanceof HttpException) {
@@ -137,7 +131,7 @@ export class AppointmentsService {
       async findMaxOrderNumberByDateAndHospital(hospitalId: number): Promise<AppointmentCountDto[]> {
         const groupedAppointments = await this.prismaService.appointments.groupBy({
           by: ['date'],
-          where: { hospitalId: Number(hospitalId) },
+          where: { hospitalId: Number(hospitalId) , status:'Booked' },
           _max: {
             orderNumber: true,
           },
@@ -159,7 +153,7 @@ export class AppointmentsService {
       }
     
 
-      async deleteAppointmentByUser(Id: number): Promise<string> {
+      async deleteAppointment(Id: number): Promise<string> {
         const deletedUser = await this.prismaService.appointments.update({
           where: { id: Number(Id) },
           data: { status: "Unbook" }, 
@@ -168,24 +162,24 @@ export class AppointmentsService {
         if (!deletedUser) {
           throw new NotFoundException(`User with ID ${Id} not found`);
         }
-        throw new successException("delete user succesfull");
+        throw new successException("delete appointment succesfull");
       }
 
       async deleteAppointmentByDoctor(hospitalId: number): Promise<string> {
         const currentDate = format(new Date(), "yyyy-MM-dd'T'00:00:00.000'Z'");
-        const deletedUser = await this.prismaService.appointments.findFirst({
+        const deletedAppointment = await this.prismaService.appointments.findFirst({
           where: { hospitalId: Number(hospitalId),
                    status: 'Booked',
                    date:currentDate
            },
         });
-        console.log(deletedUser)
-        if (!deletedUser) {
+      
+        if (!deletedAppointment) {
           throw new NotFoundException(`User with ID ${hospitalId} not found`);
         }
-        console.log(deletedUser.id)
+       
         await this.prismaService.appointments.update({
-          where: { id: Number( deletedUser.id) },
+          where: { id: Number( deletedAppointment.id) },
           data: {
             status: 'Unbook',
           },
@@ -205,49 +199,6 @@ export class AppointmentsService {
         return updatedUser;
       }
 
-      async getActualOrderNumberHospital(hospitalId: number): Promise<OrderInfo> {
-        const currentDate = format(new Date(), "yyyy-MM-dd'T'00:00:00.000'Z'");
-      
-        const appointments = await this.prismaService.appointments.findMany({
-            where: {
-                hospitalId: Number(hospitalId),
-                date: currentDate,
-                status: 'Booked',
-            },
-            orderBy: {
-                orderNumber: 'asc',
-            },
-            take: 4, // Fetching the actualNumber and the next 3 appointments
-        });
     
-        if (appointments.length === 0) {
-            return { actualNumber: 0, nextThreeAppointments: [] }; // Return 0 and an empty array if no appointments are found
-        }
-    
-        console.log(appointments);
-    
-        const actualNumber = appointments[0].orderNumber;
-        const nextThreeAppointments = appointments.slice(1); // Exclude the actualNumber
-    
-        return { actualNumber, nextThreeAppointments };
-    }
-
-      async getAppointmentByHospital(hospitalId: number): Promise<Appointments[]> {
-        const currentDate = format(new Date(), "yyyy-MM-dd'T'00:00:00.000'Z'");
-      
-        const appointment = await this.prismaService.appointments.findMany({
-          where: {
-            hospitalId: Number(hospitalId),
-            date: currentDate,
-            status: 'Booked',
-          },
-          orderBy: {
-            orderNumber: 'asc',
-          },
-        });
-        if (!appointment.length) {
-          return []; 
-        }
-        return appointment
-      }  
+     
 }

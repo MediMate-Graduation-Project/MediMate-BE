@@ -1,7 +1,8 @@
 import { Controller, Get, Param, Patch, Body, Delete, Req, Post } from '@nestjs/common';
 import { HospitalsService } from './hospitals.service';
-import { Hospitals } from '@prisma/client';
+import { Appointments, Hospitals } from '@prisma/client';
 import { CreateHospitalDto } from './dto/CreateHospitalDto';
+import { AppointmentCountDto } from '../appointments/dto/AppointmentCountDto ';
 
 @Controller('hospitals')
 export class HospitalsController {
@@ -11,10 +12,18 @@ export class HospitalsController {
   async getAllHospital(): Promise<Hospitals[]> {
     return await this.hospitalsService.getAllHospitals();
   }
+  @Get('actual-ordernumber/:hospitalId')
+  async getActualOrderNumberHospital(@Param('hospitalId') hospitalId: number): Promise<{ actualNumber: number, nextThreeAppointments: Appointments[] }> {
+    return await this.hospitalsService.getActualOrderNumberHospital(hospitalId);
+  }
 
   @Post('')
    async createHospital(@Body() body:CreateHospitalDto) {
     return await this.hospitalsService.createHospital(body);
+  }
+  @Get(':hospitalId/appointments') 
+  async getAppointmentByHospital(@Param('hospitalId') hospitalId: number): Promise<AppointmentCountDto[]> {
+    return await this.hospitalsService.getAppointmentByHospital(hospitalId);
   }
 
   @Get(':id')

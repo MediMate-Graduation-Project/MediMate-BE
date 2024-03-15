@@ -1,8 +1,13 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Hospitals } from '@prisma/client';
+import { Appointments, Hospitals } from '@prisma/client';
 import { successException } from 'src/commons/Exception/succesExeption';
 import { CreateHospitalDto } from './dto/CreateHospitalDto';
+import { format } from 'date-fns';
+interface OrderInfo {
+  actualNumber: number;
+  nextThreeAppointments: Appointments[];
+}
 
 @Injectable()
 export class HospitalsService {
@@ -46,7 +51,25 @@ export class HospitalsService {
     return hospitalsWithAggregates;
   }
 
-
+  async getAppointmentByHospital(hospitalId: number): Promise<Appointments[]> {
+    const currentDate = format(new Date(), "yyyy-MM-dd'T'00:00:00.000'Z'");
+  
+    const appointment = await this.prismaService.appointments.findMany({
+      where: {
+        hospitalId: Number(hospitalId),
+        date: currentDate,
+        status: 'Booked',
+      },
+      orderBy: {
+        orderNumber: 'asc',
+      },
+    });
+    if (!appointment.length) {
+      return []; 
+    }
+    return appointment
+  }  
+  
   async createHospital(createHospitalDto: CreateHospitalDto)  {
     const { hospitalName } = createHospitalDto;
     const existinghospital = await this.prismaService.hospitals.findUnique({
@@ -71,6 +94,31 @@ export class HospitalsService {
     });
     return newHospital
   }
+
+  async getActualOrderNumberHospital(hospitalId: number): Promise<OrderInfo> {
+    const currentDate = format(new Date(), "yyyy-MM-dd'T'00:00:00.000'Z'");
+  
+    const appointments = await this.prismaService.appointments.findMany({
+        where: {
+            hospitalId: Number(hospitalId),
+            date: currentDate,
+            status: 'Booked',
+        },
+        orderBy: {
+            orderNumber: 'asc',
+        },
+        take: 4, 
+    });
+
+    if (appointments.length === 0) {
+        return { actualNumber: 0, nextThreeAppointments: [] }; 
+    }
+
+    const actualNumber = appointments[0].orderNumber;
+    const nextThreeAppointments = appointments.slice(1); 
+
+    return { actualNumber, nextThreeAppointments };
+}
 
   async getHospitalById(id: number): Promise<Hospitals | null> {
   const hospitalWithReviews = await this.prismaService.hospitals.findUnique({
