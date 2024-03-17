@@ -1,4 +1,4 @@
-import { CanActivate, ExecutionContext, HttpException, Injectable, UnauthorizedException } from "@nestjs/common";
+import { CanActivate, ExecutionContext, ForbiddenException, HttpException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { Reflector } from "@nestjs/core";
 import { JwtService } from "@nestjs/jwt";
@@ -6,6 +6,8 @@ import { AuthGuard } from "@nestjs/passport";
 import { error } from "console";
 import { Request } from 'express';
 import { IS_PUBLIC_KEY } from "./public.guard";
+import { Role } from "src/commons/constants/role.enum";
+import { ROLES_KEY } from "../decorator/role.decorator";
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt'){
@@ -20,6 +22,9 @@ export class JwtAuthGuard extends AuthGuard('jwt'){
         if(isPublic){
             return true
         }
+        
+        const {user} = context.switchToHttp().getRequest()
+        console.log(user);
         return super.canActivate(context)
     }
 
@@ -27,36 +32,18 @@ export class JwtAuthGuard extends AuthGuard('jwt'){
         if(err || !user){
             throw err || new UnauthorizedException("no user");
         }
+        const requiredRoles = this.reflector.getAllAndOverride<Role[]>(ROLES_KEY,[
+            context.getHandler(),
+            context.getClass()
+        ])
+        if(!requiredRoles){
+            return user
+        }
+
+        if(!requiredRoles.some((role)=>user.role === role)) {
+            throw new ForbiddenException(`Role required: ${requiredRoles}`);
+          }
         return user
     }
 }
-            // const request = context.switchToHttp().getRequest();
-            // const token = this.extractTokenFromCookie(request);
-
-// export class JwtAuthGuard implements CanActivate {
-//     constructor(private jwtService: JwtService, private configService: ConfigService) { }
-
-//     async canActivate(context: ExecutionContext): Promise<boolean> {
-//         const request = context.switchToHttp().getRequest();
-//         const token = this.extractTokenFromCookie(request);
-//         if (!token) {
-//             throw new UnauthorizedException();
-//         }
-//         try {
-//             const payload = await this.jwtService.verifyAsync(token, {
-//                 secret: this.configService.get<string>('SECRET')
-//             });
-//             request['user_data'] = payload;
-//         } catch {
-//             throw new HttpException({
-//                 status: 419,
-//                 message: "Token expired"
-//             }, 419);
-//         }
-//         return true;
-//     }
-
-    // private extractTokenFromCookie(request: Request): string | undefined {
-    //     return request.cookies['access_token']; 
-    // }
-// }
+          

@@ -35,7 +35,7 @@ export class AuthController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @ROLES(Role.User)
+  @ROLES(Role.User,Role.Hospital)
   @Get('profile')
   async getProfile(@Req() req:RequestWithUser):Promise<SanitizedUser>{
     return req.user

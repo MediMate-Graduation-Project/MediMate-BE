@@ -11,7 +11,7 @@ export interface SanitizedUser {
     name:string,
     role: string,
     refreshToken?: string,
-
+    hospitalId?:number
 }
 
 export interface JwtPayload{

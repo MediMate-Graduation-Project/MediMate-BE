@@ -5,21 +5,24 @@ import { Appointments } from '@prisma/client'
 import { formatAppointmentDates } from 'src/commons/utils/formatAppointmentDates';
 import { successException } from 'src/commons/Exception/succesExeption';
 import { AppointmentCountDto } from './dto/AppointmentCountDto ';
+import { format } from 'date-fns';
 
 
 @Injectable()
 export class AppointmentsService {
-    constructor(private prismaService: PrismaService) {}
+    constructor(private readonly prismaService: PrismaService,
+                ) {}
    
     async bookAppointment(dto: CreateAppointmentDto) {
         try {
           const { userId, hospitalId, date } = dto;
           const isoDate = new Date(date + "T00:00:00.00Z");
-          const currentDate = new Date(); 
-          console.log(currentDate)
-          console.log(isoDate)
-          if (isoDate < currentDate) {
-            throw new HttpException('Invalid appointment date. Please choose a date in the future.',HttpStatus.BAD_REQUEST);
+          const currentDate = new Date();  
+          const minAllowedDate = new Date(currentDate);
+          minAllowedDate.setHours(minAllowedDate.getHours() + 4);
+
+          if (isoDate < minAllowedDate) {
+            throw new HttpException('Ngày hẹn không hợp lệ. Vui lòng chọn một ngày trong tương lai',HttpStatus.BAD_REQUEST);
           }
           const existingHospital = await this.prismaService.hospitals.findUnique({
             where: { id: hospitalId },
@@ -37,16 +40,12 @@ export class AppointmentsService {
           });
       
           const orderNumber = existingAppointmentsCount === 0 ? 1 : existingAppointmentsCount + 1;
-      
           const baseTime = new Date(`${date}T15:00:00`);
           const incrementMinutes = (orderNumber - 1) * 20;
-      
           const estimated = new Date(baseTime);
           estimated.setMinutes(baseTime.getMinutes() + incrementMinutes);
-      
           const endTime = new Date(estimated);
           endTime.setMinutes(endTime.getMinutes() + 20);
-      
           const isValidDate = (date: Date) => !isNaN(date.getTime());
       
           if (isValidDate(estimated) && isValidDate(endTime)) {
@@ -86,8 +85,9 @@ export class AppointmentsService {
               id:true,
               hospital: {
                 select: {
-                  hospitalName: true,
-                  HospitalSpecialization: {
+                  id:true,
+                  name: true,
+                  hospitalSpecialization: {
                     select: {
                      specialization:{
                       select:{
@@ -115,7 +115,6 @@ export class AppointmentsService {
           appointment.endTime = new Date(appointment.endTime);
           appointment.date = new Date(appointment.date);
           formatAppointmentDates(appointment);
-      
           return appointment;
         } catch (error) {
           if (error instanceof HttpException) {
@@ -129,7 +128,7 @@ export class AppointmentsService {
       async findMaxOrderNumberByDateAndHospital(hospitalId: number): Promise<AppointmentCountDto[]> {
         const groupedAppointments = await this.prismaService.appointments.groupBy({
           by: ['date'],
-          where: { hospitalId: Number(hospitalId) },
+          where: { hospitalId: Number(hospitalId) , status:'Booked' },
           _max: {
             orderNumber: true,
           },
@@ -160,8 +159,10 @@ export class AppointmentsService {
         if (!deletedUser) {
           throw new NotFoundException(`User with ID ${Id} not found`);
         }
-        throw new successException("delete user succesfull");
+        throw new successException("delete appointment succesfull");
       }
+
+      
 
       async updateAppointment(id: number): Promise<Appointments | null> {
         const updatedUser = await this.prismaService.appointments.update({
@@ -174,4 +175,6 @@ export class AppointmentsService {
         }
         return updatedUser;
       }
+
+    
 }
