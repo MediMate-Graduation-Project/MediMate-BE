@@ -12,7 +12,7 @@ export class HospitalsController {
   async getAllHospital(): Promise<Hospitals[]> {
     return await this.hospitalsService.getAllHospitals();
   }
-  @Get('actual-ordernumber/:hospitalId')
+  @Get(':hospitalId/actual-ordernumber')
   async getActualOrderNumberHospital(@Param('hospitalId') hospitalId: number): Promise<{ actualNumber: number, nextThreeAppointments: Appointments[] }> {
     return await this.hospitalsService.getActualOrderNumberHospital(hospitalId);
   }
