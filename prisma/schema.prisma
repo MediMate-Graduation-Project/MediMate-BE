@@ -1,0 +1,157 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model Users {
+  id            Int       @id @default(autoincrement())
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime?  @updatedAt
+  phoneNumber   String    @unique
+  password      String   
+  address       String? 
+  name          String?
+  gender        String?
+  role          UserRole @default(USER)
+  birthDate     String?
+  status        Status @default(ACTIVE)
+  image         String?
+  refreshToken  String?
+  healthInsurances HealthInsurances[]
+  diagnostics   Diagnostics[]
+  messages      Messages[]
+  appointments  Appointments[]
+  reviews       Reviews[]
+  doctor Doctor?
+}
+
+enum UserRole {
+  ADMIN
+  USER
+  HOSPITAL
+}
+
+enum Status {
+  ACTIVE
+  INACTIVE
+}
+model Doctor{
+  id            Int      @id @default(autoincrement())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          Users    @relation(fields: [userId], references: [id])
+  userId        Int @unique
+  hospital      Hospitals @relation(fields: [hospitalId], references: [id])
+  hospitalId    Int
+
+}
+model Hospitals {
+  id              Int              @id @default(autoincrement())
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  name    String     @unique
+  type    String
+  hospitalSpecialization HospitalSpecialization[]
+  address String
+  industryCode    Int
+  introduce String?
+  image String?
+  status        Status @default(ACTIVE)
+  workingSession String?
+  messages        Messages[]
+  appointments    Appointments[]
+  reviews         Reviews[]
+  doctors         Doctor[] 
+  
+}
+
+model HealthInsurances {
+  id      Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user    Users    @relation(fields: [userId], references: [id])
+  userId  Int
+  type    String
+  code    String
+  status  String
+}
+
+model Diagnostics {
+  id            Int      @id @default(autoincrement())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          Users    @relation(fields: [userId], references: [id])
+  userId        Int
+  description   String
+  typeOfDisease String
+}
+
+model Messages {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      Users    @relation(fields: [userId], references: [id])
+  userId    Int
+  hospital  Hospitals @relation(fields: [hospitalId], references: [id])
+  hospitalId Int
+  content   String
+  date      DateTime
+}
+
+model Appointments {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        Users    @relation(fields: [userId], references: [id])
+  userId      Int
+  hospital    Hospitals @relation(fields: [hospitalId], references: [id])
+  hospitalId  Int
+  orderNumber Int
+  estimated   DateTime
+  endTime     DateTime
+  date        DateTime
+  status      String
+      
+}
+
+model Reviews {
+  id            Int      @id @default(autoincrement())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  rating        Float
+  users Users @relation(fields: [userId], references: [id])
+  userId        Int
+  review        String
+  date_review   DateTime
+  hospital  Hospitals @relation(fields: [hospitalId], references: [id])
+  hospitalId Int
+}
+
+model Specializations {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  name      String
+  clinic    String
+  roomNumber String
+  specialization HospitalSpecialization[]
+}
+
+model HospitalSpecialization {
+  id              Int              @id @default(autoincrement())
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  hospital        Hospitals        @relation(fields: [hospitalId], references: [id])
+  hospitalId      Int
+  specialization  Specializations  @relation(fields: [specializationId], references: [id])
+  specializationId Int
+  @@unique([hospitalId, specializationId])
+}
