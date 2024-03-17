@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Patch, Body, Delete, Req, Post } from '@nestjs/common';
+import { Controller, Get, Param, Patch, Body, Delete, Req, Post, Query } from '@nestjs/common';
 import { HospitalsService } from './hospitals.service';
 import { Appointments, Hospitals } from '@prisma/client';
 import { CreateHospitalDto } from './dto/CreateHospitalDto';
@@ -15,6 +15,16 @@ export class HospitalsController {
   @Get(':hospitalId/actual-ordernumber')
   async getActualOrderNumberHospital(@Param('hospitalId') hospitalId: number): Promise<{ actualNumber: number, nextThreeAppointments: Appointments[] }> {
     return await this.hospitalsService.getActualOrderNumberHospital(hospitalId);
+  }
+
+  @Get('map')
+  async getNearbyHospitals(
+    @Query('lat') lat: number,
+    @Query('lon') lon: number,
+  ) {
+    const nearbyHospitals = await this.hospitalsService.getNearbyHospitals(lat, lon);
+
+    return nearbyHospitals;
   }
 
   @Post('')
