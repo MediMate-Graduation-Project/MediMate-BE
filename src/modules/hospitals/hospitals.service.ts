@@ -90,11 +90,11 @@ export class HospitalsService {
       // console.log(databaseHospitals)
       
       const matchingHospitals = databaseHospitals.filter(dbHospital => {
-        return nearbyHospitals.some(nearbyHospital => nearbyHospital.name === dbHospital.hospitalName);
+        return nearbyHospitals.some(nearbyHospital => nearbyHospital.name === dbHospital.name);
       });
 
       const result = matchingHospitals.map(matchingHospital => {
-        const nearbyHospital = nearbyHospitals.find(nearby => nearby.name === matchingHospital.hospitalName);
+        const nearbyHospital = nearbyHospitals.find(nearby => nearby.name === matchingHospital.name);
         let distanceInKilometers = nearbyHospital ? nearbyHospital.distance / 1000 : null;
         if (distanceInKilometers !== null) {
           distanceInKilometers = Math.round(distanceInKilometers * 10) / 10;
@@ -109,13 +109,12 @@ export class HospitalsService {
     } catch (error) {
       throw new NotFoundException('Nearby hospitals not found');
     }
-  
   }
 
   async createHospital(createHospitalDto: CreateHospitalDto)  {
-    const { hospitalName } = createHospitalDto;
+    const { name } = createHospitalDto;
     const existinghospital = await this.prismaService.hospitals.findUnique({
-      where: {hospitalName},
+      where: {name},
     }) as Hospitals;
     if (existinghospital) {
       throw new ConflictException('hospital already exists');
@@ -123,14 +122,14 @@ export class HospitalsService {
     
     const newHospital = await this.prismaService.hospitals.create({
         data: {
-            hospitalName: createHospitalDto.hospitalName,
+            name: createHospitalDto.name,
             industryCode: createHospitalDto.industryCode,
-            hospitalType: createHospitalDto.hospitalType,
+            type: createHospitalDto.type,
             address:createHospitalDto.address
           },
           select:{
             id:true,
-            hospitalName:true,
+            name:true,
             createdAt:true
           }    
     });

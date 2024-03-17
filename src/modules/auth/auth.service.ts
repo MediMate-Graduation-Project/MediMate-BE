@@ -119,12 +119,32 @@ export class AuthService {
       }
 
       async validateJwtUser(payload:JwtPayload):Promise<SanitizedUser|null>{
-        const user = await this.prismaService.users.findUnique({where:{id:payload.sub}})
-        if(!user){
-          return null
-        }
-        const {id,role,name} = user 
-        return {id,role,name}
+        const user = await this.prismaService.users.findUnique({
+          where: { id: payload.sub },
+          include: {
+              doctor: {
+                  select: {
+                      hospitalId: true
+                  }
+              }
+          }
+      });
+  
+      if (!user) {
+          return null;
       }
+  
+      const { id, role, name } = user;
+      let sanitizedUser: SanitizedUser;
+  
+      if (user.role === 'USER') {
+          sanitizedUser = { id, role, name };
+      } else if (user.role === 'HOSPITAL') {
+          const hospitalId = user.doctor?.hospitalId;
+          sanitizedUser = { id, role, name, hospitalId };
+      } else {
+          sanitizedUser = { id, role, name };
+      }
+      return sanitizedUser;
 }
-
+}

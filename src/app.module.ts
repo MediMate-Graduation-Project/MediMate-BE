@@ -19,6 +19,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './modules/auth/guards/jwt.guard';
 import { ChatCompletationApiModule } from './modules/chat-completation-api/chat-completation-api.module';
+import { DoctorsModule } from './modules/doctors/doctors.module';
 
 
 
@@ -29,7 +30,7 @@ import { ChatCompletationApiModule } from './modules/chat-completation-api/chat-
       isGlobal: true,
       envFilePath: ['.env'],
     }),
-  AuthModule, UsersModule, RolesModule, HospitalsModule, PaymentsModule, MessagesModule, SpecializationModule, ReviewsModule, AppointmentsModule, HealthInsurancesModule, DiagnosticModule, MedicalRecordModule ,ChatCompletationApiModule],
+  AuthModule, UsersModule, RolesModule, HospitalsModule, PaymentsModule, MessagesModule, SpecializationModule, ReviewsModule, AppointmentsModule, HealthInsurancesModule, DiagnosticModule, MedicalRecordModule ,ChatCompletationApiModule,DoctorsModule],
   controllers: [],
   providers: [ 
   //   {

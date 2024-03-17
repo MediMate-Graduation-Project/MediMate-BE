@@ -5,13 +5,13 @@ import { IsNotEmpty } from 'class-validator';
 export class CreateHospitalDto {
 
     @IsNotEmpty({ message: 'hospitalName is required' })
-    hospitalName: string;
+    name: string;
 
     @IsNotEmpty({ message: 'industryCode is required' })
     industryCode: number;
   
     @IsNotEmpty({ message: 'hospitalType is required' })
-    hospitalType: string;
+    type: string;
 
     @IsNotEmpty({ message: 'address is required' })
     address: string;

@@ -8,9 +8,6 @@ import { AppointmentCountDto } from './dto/AppointmentCountDto ';
 import { format } from 'date-fns';
 
 
-
-
-
 @Injectable()
 export class AppointmentsService {
     constructor(private readonly prismaService: PrismaService,
@@ -25,7 +22,7 @@ export class AppointmentsService {
           minAllowedDate.setHours(minAllowedDate.getHours() + 4);
 
           if (isoDate < minAllowedDate) {
-            throw new HttpException('Invalid appointment date. Please choose a date in the future.',HttpStatus.BAD_REQUEST);
+            throw new HttpException('Ngày hẹn không hợp lệ. Vui lòng chọn một ngày trong tương lai',HttpStatus.BAD_REQUEST);
           }
           const existingHospital = await this.prismaService.hospitals.findUnique({
             where: { id: hospitalId },
@@ -89,8 +86,8 @@ export class AppointmentsService {
               hospital: {
                 select: {
                   id:true,
-                  hospitalName: true,
-                  HospitalSpecialization: {
+                  name: true,
+                  hospitalSpecialization: {
                     select: {
                      specialization:{
                       select:{
@@ -165,27 +162,7 @@ export class AppointmentsService {
         throw new successException("delete appointment succesfull");
       }
 
-      async deleteAppointmentByDoctor(hospitalId: number): Promise<string> {
-        const currentDate = format(new Date(), "yyyy-MM-dd'T'00:00:00.000'Z'");
-        const deletedAppointment = await this.prismaService.appointments.findFirst({
-          where: { hospitalId: Number(hospitalId),
-                   status: 'Booked',
-                   date:currentDate
-           },
-        });
       
-        if (!deletedAppointment) {
-          throw new NotFoundException(`User with ID ${hospitalId} not found`);
-        }
-       
-        await this.prismaService.appointments.update({
-          where: { id: Number( deletedAppointment.id) },
-          data: {
-            status: 'Unbook',
-          },
-        });
-        throw new successException("delete user succesfull");
-      }
 
       async updateAppointment(id: number): Promise<Appointments | null> {
         const updatedUser = await this.prismaService.appointments.update({
@@ -200,5 +177,4 @@ export class AppointmentsService {
       }
 
     
-     
 }

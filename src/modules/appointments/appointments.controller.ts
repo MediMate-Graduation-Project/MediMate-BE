@@ -1,9 +1,12 @@
-import { Controller, Post,Get, Body, ValidationPipe, Param, Delete, Res, HttpStatus, Query, Patch } from '@nestjs/common';
+import { Controller, Post,Get, Body, ValidationPipe, Param, Delete, Res, HttpStatus, Query, Patch, UseGuards } from '@nestjs/common';
 import { AppointmentsService } from './appointments.service';
 import { CreateAppointmentDto } from './dto/CreateAppointmentDto';
 import { Response as ExpressResponse } from 'express';
 import { Appointments } from '@prisma/client';
 import { AppointmentCountDto } from './dto/AppointmentCountDto ';
+import { JwtAuthGuard } from '../auth/guards/jwt.guard';
+import { ROLES } from '../auth/decorator/role.decorator';
+import { Role } from 'src/commons/constants/role.enum';
 
 @Controller('appointments')
 export class AppointmentsController {
@@ -40,9 +43,5 @@ export class AppointmentsController {
     return await this.appointmentsService.deleteAppointment(id);
   }
 
-  @Delete('doctor/:hospitalId')
-  async deleteAppointmentByDoctor(@Param('hospitalId') hospitalId: number  ): Promise<string> {
-    return await this.appointmentsService.deleteAppointmentByDoctor(hospitalId);
-  }
-  
+ 
 }
