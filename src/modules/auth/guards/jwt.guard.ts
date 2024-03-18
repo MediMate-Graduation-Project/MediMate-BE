@@ -30,7 +30,7 @@ export class JwtAuthGuard extends AuthGuard('jwt'){
 
     handleRequest<TUser = any>(err: any, user: any, info: any, context: ExecutionContext, status?: any): TUser {
         if(err || !user){
-            throw err || new UnauthorizedException("no user");
+            throw err || new UnauthorizedException("Không có người dùng");
         }
         const requiredRoles = this.reflector.getAllAndOverride<Role[]>(ROLES_KEY,[
             context.getHandler(),
@@ -41,7 +41,7 @@ export class JwtAuthGuard extends AuthGuard('jwt'){
         }
 
         if(!requiredRoles.some((role)=>user.role === role)) {
-            throw new ForbiddenException(`Role required: ${requiredRoles}`);
+            throw new ForbiddenException(`Yêu cầu vai trò: ${requiredRoles}`);
           }
         return user
     }

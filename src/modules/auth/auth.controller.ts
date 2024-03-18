@@ -27,10 +27,10 @@ export class AuthController {
     try {
       const { accessToken, refreshToken } = await this.authService.login(req.user);
       this.setCookies(res, accessToken, refreshToken);
-      res.status(HttpStatus.OK).end('Logged in successfully');
+      res.status(HttpStatus.OK).end('Đăng nhập thành công.');
     } catch (error) {
       this.logger.error(error)
-      res.status(HttpStatus.UNAUTHORIZED).end('Login failed');
+      res.status(HttpStatus.UNAUTHORIZED).end('LĐăng nhập không thành công.');
     }
   }
 
@@ -47,9 +47,9 @@ export class AuthController {
     try {
       await this.authService.logout(req.user)
       this.clearCookies(res);
-      res.status(HttpStatus.OK).end('Signed out successfully');
+      res.status(HttpStatus.OK).end('Đăng xuất thành công.');
     } catch (error) {
-      res.status(HttpStatus.INTERNAL_SERVER_ERROR).end('Logout failed');
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).end('Đăng xuất không thành công.');
     }
   }
 
@@ -59,9 +59,9 @@ export class AuthController {
     try {
       const accessToken  = await this.authService.refreshToken(req.user);
       res.cookie(ACCESS_TOKEN_KEY, accessToken, { httpOnly: true, secure: true, expires: new Date(Date.now() + 3600000) });
-      res.status(HttpStatus.OK).end('Refresh token successfully');
+      res.status(HttpStatus.OK).end('RefreshToken thành công. ');
     } catch (error) {
-        res.status(HttpStatus.BAD_REQUEST).end('Error trying to update access token');
+        res.status(HttpStatus.BAD_REQUEST).end('Đã xảy ra lỗi khi cố gắng cập nhật RefeshToken');
       }
     
   }

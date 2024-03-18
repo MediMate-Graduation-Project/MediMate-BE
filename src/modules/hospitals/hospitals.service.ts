@@ -85,9 +85,7 @@ export class HospitalsService {
     try {
       const response = await axios.get(`https://us1.locationiq.com/v1/nearby?key=${apiKey}&lat=${lat}&lon=${lon}&tag=hospital&radius=${radius}`);
       const nearbyHospitals = response.data;
-      // console.log(nearbyHospitals)
       const databaseHospitals = await this.prismaService.hospitals.findMany();
-      // console.log(databaseHospitals)
       
       const matchingHospitals = databaseHospitals.filter(dbHospital => {
         return nearbyHospitals.some(nearbyHospital => nearbyHospital.name === dbHospital.name);
@@ -107,7 +105,7 @@ export class HospitalsService {
 
       return result;
     } catch (error) {
-      throw new NotFoundException('Nearby hospitals not found');
+      throw new NotFoundException('Không tìm thấy bệnh viện gần đây.');
     }
   }
 
@@ -117,7 +115,7 @@ export class HospitalsService {
       where: {name},
     }) as Hospitals;
     if (existinghospital) {
-      throw new ConflictException('hospital already exists');
+      throw new ConflictException('Bệnh viện đã tồn tại.');
     }
     
     const newHospital = await this.prismaService.hospitals.create({
@@ -213,7 +211,7 @@ export class HospitalsService {
     });
 
     if (!updatedHospital) {
-      throw new NotFoundException(`Hospital with ID ${id} not found`);
+      throw new NotFoundException(`Bệnh viện với ID ${id} không được tìm thấy`);
     }
 
     return updatedHospital;
@@ -226,8 +224,8 @@ export class HospitalsService {
     });
 
     if (!deletedHospital) {
-      throw new NotFoundException(`Hospital with ID ${id} not found`);
+      throw new NotFoundException(`Bệnh viện với ID ${id} không được tìm thấy`);
     }
-    throw new successException('delete Hospital succesfull');
+    throw new successException('Xóa Bệnh viện thành công.');
   }
 }

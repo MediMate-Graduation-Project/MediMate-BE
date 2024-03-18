@@ -21,7 +21,7 @@ export class UsersService {
         status : "ACTIVE" },
     });
     if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`);
+      throw new NotFoundException(`Người dùng với ID ${id} không được tìm thấy.`);
     }
 
     return user;
@@ -34,7 +34,7 @@ export class UsersService {
     });
 
     if (!updatedUser) {
-      throw new NotFoundException(`User with ID ${id} not found`);
+      throw new NotFoundException(`Người dùng với ID ${id} không được tìm thấy.`);
     }
 
     return updatedUser;
@@ -43,12 +43,12 @@ export class UsersService {
   async deleteUser(id: number): Promise<void> {
     const deletedUser = await this.prismaService.users.update({
       where: { id: Number(id) },
-      data: { status: "INACTIVE" }, // Assuming "status" is the field to represent user status
+      data: { status: "INACTIVE" }, 
     });
 
     if (!deletedUser) {
-      throw new NotFoundException(`User with ID ${id} not found`);
+      throw new NotFoundException(`Người dùng với ID ${id} không được tìm thấy.`);
     }
-    throw new successException("delete user succesfull");
+    throw new successException("Đã xóa người dùng thành công");
   }
 }
