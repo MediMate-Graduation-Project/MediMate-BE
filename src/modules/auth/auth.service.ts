@@ -23,17 +23,17 @@ export class AuthService {
         const { phoneNumber,name } = registerDto;
        
       if (!/^\d+$/.test(phoneNumber)) {
-        throw new BadRequestException('Invalid phone number format');
+        throw new BadRequestException('Định dạng số điện thoại không hợp lệ');
       }
 
       if (!/^[a-zA-ZÀ-Ỹà-ỹẠ-Ỹạ-ỹĂ-Ỹă-ỹẰ-Ỷằ-ỷẠ-Ỵạ-ỵẮ-Ỷắ-ỷẤ-Ỵấ-ỵẦ-Ỵầ-ỵẢ-Ỵả-ỵẠ-Ỵạ-ỵÃ-Ỹã-ỹÈ-Ỹè-ỹẸ-Ỵẹ-ỵẾ-Ỷế-ỷỀ-Ỵề-ỵỂ-Ỷể-ỷẺ-Ỵẻ-ỵỄ-Ỹế-ỹÌ-Ỷì-ỷỊ-Ỵị-ỵÍ-Ỵí-ỵĨ-Ỹĩ-ỹÒ-Ỹò-ỹỌ-Ỵọ-ỵÓ-Ỵó-ỵỎ-Ỷỏ-ỷỐ-Ỵố-ỵỒ-Ỵồ-ỵỔ-Ỵổ-ỷỘ-Ỵộ-ỵỚ-Ỵớ-ỵỜ-Ỷờ-ỷỞ-Ỵở-ỵỠ-Ỵỡ-ỷỢ-Ỵợ-ỵỌ-Ỷọ-ỷÔ-Ỹô-ỹỌ-Ỵọ-ỵỐ-Ỵố-ỵỒ-Ỵồ-ỵỔ-Ỵổ-ỷỘ-Ỵộ-ỵỚ-Ỵớ-ỵỜ-Ỷờ-ỷỞ-Ỵở-ỵỠ-Ỵỡ-ỷỢ-Ỵợ-ỵỤ-Ỹụ-ỹỦ-Ỵủ-ỷỨ-Ỵứ-ỵỪ-Ỵừ-ỵỬ-Ỵử-ỷỰ-Ỵự-ỵ\s]+$/.test(name)) {
-        throw new BadRequestException('Invalid name format');
+        throw new BadRequestException('Định dạng tên không hợp lệ.');
       }
         const existingUser = await this.prismaService.users.findUnique({
           where: {phoneNumber},
         }) as Users;
         if (existingUser) {
-          throw new ConflictException('User already exists');
+          throw new ConflictException('Người dùng đã tồn tại.');
         }
         const hashedPassword = await bcrypt.hash(registerDto.password,10);
         const newUser = await this.prismaService.users.create({
@@ -80,7 +80,7 @@ export class AuthService {
         const newAccessToken = await this.generateAccessToken(users);
         return newAccessToken ;
       } catch (error) {
-        throw new UnauthorizedException('Invalid refreshToken');
+        throw new UnauthorizedException('refreshToken không hợp lệ.');
       }
     }
   
@@ -106,13 +106,13 @@ export class AuthService {
         });
         console.log(user)
         if (!user) {
-          throw new UnauthorizedException('User does not exist')
+          throw new UnauthorizedException('Người dùng không tồn tại.')
         }
     
         const isPasswordValid = await bcrypt.compare(password, user.password);
     
         if (!isPasswordValid) {
-          throw new UnauthorizedException('Invalid credentials');
+          throw new UnauthorizedException('Thông tin đăng nhập không hợp lệ.');
         }
         const {id ,role,name} = user 
         return {id ,role ,name}

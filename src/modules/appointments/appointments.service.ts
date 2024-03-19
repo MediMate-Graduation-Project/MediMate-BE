@@ -29,7 +29,7 @@ export class AppointmentsService {
           });
           
           if (!existingHospital) {
-            throw new Error('Invalid hospitalId');
+            throw new Error('Mã bệnh viện không hợp lệ.');
           }
           
           const existingAppointmentsCount = await this.prismaService.appointments.count({
@@ -63,13 +63,13 @@ export class AppointmentsService {
       
             return appointment;
           } else {
-            throw new Error('Invalid date calculation');
+            throw new Error('Tính toán ngày không hợp lệ');
           }
         } catch (error) {
           if (error instanceof HttpException) {
             throw error; 
           } else {
-            throw new HttpException('Error creating appointment', HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new HttpException('Đã xảy ra lỗi khi tạo cuộc hẹn.', HttpStatus.INTERNAL_SERVER_ERROR);
           }
         }
       }
@@ -108,7 +108,7 @@ export class AppointmentsService {
           });
       
           if (!appointment) {
-            throw new NotFoundException(`Appointments not found for user with ID ${userId}`);
+            throw new NotFoundException(`Không tìm thấy cuộc hẹn cho người dùng có ID ${userId}`);
           }
       
           appointment.estimated = new Date(appointment.estimated);
@@ -120,7 +120,7 @@ export class AppointmentsService {
           if (error instanceof HttpException) {
             throw error;
           } else {
-            throw new HttpException('Error retrieving appointments', HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new HttpException('Đã xảy ra lỗi khi truy xuất thông tin cuộc hẹn.', HttpStatus.INTERNAL_SERVER_ERROR);
           }
         }
       }
@@ -134,7 +134,7 @@ export class AppointmentsService {
           },
         });
         if (!groupedAppointments) {
-          throw new NotFoundException(`Appointments not found for user with ID ${hospitalId}`);
+          throw new NotFoundException(`Không tìm thấy cuộc hẹn cho người dùng có ID ${hospitalId}`);
         }
         const result: AppointmentCountDto[] = [];
     
@@ -157,9 +157,9 @@ export class AppointmentsService {
         });
     
         if (!deletedUser) {
-          throw new NotFoundException(`User with ID ${Id} not found`);
+          throw new NotFoundException(`Người dùng có ID ${Id} không được tìm thấy`);
         }
-        throw new successException("delete appointment succesfull");
+        throw new successException("Xóa cuộc hẹn thành công");
       }
 
       
@@ -171,7 +171,7 @@ export class AppointmentsService {
         });
     
         if (!updatedUser) {
-          throw new NotFoundException(`Appointment with ID ${id} not found`);
+          throw new NotFoundException(`Không tìm thấy cuộc hẹn với ID ${id}`);
         }
         return updatedUser;
       }

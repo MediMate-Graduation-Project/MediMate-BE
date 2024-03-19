@@ -19,7 +19,7 @@ export class DoctorsService {
         });
         
         if (!deletedAppointment) {
-          throw new NotFoundException(`Hospital with ID ${hospitalId} not found`);
+          throw new NotFoundException(`Bệnh viện với ID ${hospitalId} không được tìm thấy`);
         }
        
         await this.prismaService.appointments.update({
@@ -28,6 +28,6 @@ export class DoctorsService {
             status: 'Unbook',
           },
         });
-        throw new successException("delete user succesfull");
+        throw new successException("cập nhật lịch khám thành công");
       }
 }
