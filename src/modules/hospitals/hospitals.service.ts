@@ -147,6 +147,9 @@ export class HospitalsService {
             orderNumber: 'asc',
         },
         take: 4, 
+        include: {
+          user: true 
+      }
     });
 
     if (appointments.length === 0) {
@@ -156,7 +159,12 @@ export class HospitalsService {
     const actualNumber = appointments[0].orderNumber;
     const nextThreeAppointments = appointments.slice(1); 
 
-    return { actualNumber, nextThreeAppointments };
+    const appointmentsWithUserInfo = nextThreeAppointments.map(appointment => ({
+      ...appointment,
+      name: appointment.user.name 
+  }));
+
+  return { actualNumber, nextThreeAppointments: appointmentsWithUserInfo };
 }
 
   async getHospitalById(id: number): Promise<Hospitals | null> {

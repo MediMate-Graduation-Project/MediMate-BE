@@ -19,15 +19,24 @@ export class AppointmentsService {
           const isoDate = new Date(date + "T00:00:00.00Z");
           const currentDate = new Date();  
           const minAllowedDate = new Date(currentDate);
-          minAllowedDate.setHours(minAllowedDate.getHours() + 4);
-
-          if (isoDate < minAllowedDate) {
+          minAllowedDate.setHours(minAllowedDate.getHours()+7);
+          console.log(isoDate)
+          console.log(minAllowedDate)
+          if (isoDate.getTime < minAllowedDate.getTime) {
             throw new HttpException('Ngày hẹn không hợp lệ. Vui lòng chọn một ngày trong tương lai',HttpStatus.BAD_REQUEST);
           }
           const existingHospital = await this.prismaService.hospitals.findUnique({
             where: { id: hospitalId },
           });
-          
+          const existingAppointment = await this.prismaService.appointments.findFirst({
+            where: {
+                userId,
+                status:"Booked"
+            },
+        });
+          if (existingAppointment) {
+              throw new HttpException(`Bạn đã có lịch đặt khám vào ngày ${existingAppointment.estimated}`, HttpStatus.BAD_REQUEST);
+          }
           if (!existingHospital) {
             throw new Error('Mã bệnh viện không hợp lệ.');
           }
