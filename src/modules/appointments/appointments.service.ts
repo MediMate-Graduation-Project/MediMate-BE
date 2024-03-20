@@ -120,8 +120,13 @@ export class AppointmentsService {
             throw new NotFoundException(`Không tìm thấy cuộc hẹn cho người dùng có ID ${userId}`);
           }
       
-          appointment.estimated = new Date(appointment.estimated);
-          appointment.endTime = new Date(appointment.endTime);
+          const estimatedTime = new Date(appointment.estimated);
+          estimatedTime.setHours(estimatedTime.getHours() - 7);
+          appointment.estimated = estimatedTime;
+          const endTime = new Date(appointment.endTime);
+          endTime.setHours(endTime.getHours() - 7);
+          appointment.endTime = endTime;
+        
           appointment.date = new Date(appointment.date);
           formatAppointmentDates(appointment);
           return appointment;
