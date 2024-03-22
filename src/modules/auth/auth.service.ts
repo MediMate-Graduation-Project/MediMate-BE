@@ -112,7 +112,7 @@ export class AuthService {
         const isPasswordValid = await bcrypt.compare(password, user.password);
     
         if (!isPasswordValid) {
-          throw new UnauthorizedException('Thông tin đăng nhập không hợp lệ.');
+          throw new UnauthorizedException('Mật khẩu không chính xác.');
         }
         const {id ,role,name} = user 
         return {id ,role ,name}

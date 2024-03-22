@@ -35,7 +35,7 @@ export class AppointmentsService {
             },
         });
           if (existingAppointment) {
-              throw new HttpException(`Bạn đã có lịch đặt khám vào ngày ${existingAppointment.estimated}`, HttpStatus.BAD_REQUEST);
+              throw new HttpException(`Bạn đã có lịch đặt khám vào ngày ${existingAppointment.estimated.getDate()}`, HttpStatus.BAD_REQUEST);
           }
           if (!existingHospital) {
             throw new Error('Mã bệnh viện không hợp lệ.');
