@@ -67,13 +67,13 @@ export class AuthController {
   }
 
   private setCookies(res: ExpressResponse, accessToken: string, refreshToken: string) {
-    res.cookie('access_token', accessToken, { httpOnly: true, secure: true, expires: new Date(Date.now() + 3600000) });
-    res.cookie('refresh_token', refreshToken, { httpOnly: true, secure: true, expires: new Date(Date.now() + 14400000) });
+    res.cookie(ACCESS_TOKEN_KEY, accessToken, { httpOnly: true, secure: true, expires: new Date(Date.now() + 3600000) });
+    res.cookie(REFRESH_TOKEN_KEY, refreshToken, { httpOnly: true, secure: true, expires: new Date(Date.now() + 14400000) });
   }
 
   private clearCookies(res: ExpressResponse) {
-    res.clearCookie(ACCESS_TOKEN_KEY);
-    res.clearCookie(REFRESH_TOKEN_KEY);
+    res.clearCookie(ACCESS_TOKEN_KEY,{ httpOnly: true, secure: true,});
+    res.clearCookie(REFRESH_TOKEN_KEY,{ httpOnly: true, secure: true,});
   }
   
 }
