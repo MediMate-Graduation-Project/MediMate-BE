@@ -18,11 +18,12 @@ export class AppointmentsService {
           const { userId, hospitalId, date } = dto;
           const isoDate = new Date(date + "T00:00:00.00Z");
           const currentDate = new Date();  
-          const minAllowedDate = new Date(currentDate);
-          minAllowedDate.setHours(minAllowedDate.getHours()+7);
-          console.log(isoDate)
-          console.log(minAllowedDate)
-          if (isoDate.getTime < minAllowedDate.getTime) {
+          currentDate.setHours(0,0,0,0)
+          // const minAllowedDate = new Date(currentDate);
+          // minAllowedDate.setHours(minAllowedDate.getHours()+7);
+          // console.log(isoDate)
+          // console.log(minAllowedDate)
+          if (isoDate < currentDate) {
             throw new HttpException('Ngày hẹn không hợp lệ. Vui lòng chọn một ngày trong tương lai',HttpStatus.BAD_REQUEST);
           }
           const existingHospital = await this.prismaService.hospitals.findUnique({
