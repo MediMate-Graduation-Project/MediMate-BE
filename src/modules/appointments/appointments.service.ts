@@ -50,7 +50,7 @@ export class AppointmentsService {
           });
       
           const orderNumber = existingAppointmentsCount === 0 ? 1 : existingAppointmentsCount + 1;
-          const baseTime = new Date(`${date}T15:00:00`);
+          const baseTime = new Date(`${date}T8:00:00`);
           const incrementMinutes = (orderNumber - 1) * 20;
           const estimated = new Date(baseTime);
           estimated.setMinutes(baseTime.getMinutes() + incrementMinutes);
