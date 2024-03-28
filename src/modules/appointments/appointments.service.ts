@@ -13,77 +13,147 @@ export class AppointmentsService {
     constructor(private readonly prismaService: PrismaService,
                 ) {}
    
+    // async bookAppointment(dto: CreateAppointmentDto) {
+    //     try {
+    //       const { userId, hospitalId, date } = dto;
+    //       const isoDate = new Date(date + "T00:00:00.00Z");
+    //       const currentDate = new Date();  
+    //       currentDate.setHours(0,0,0,0)
+    //       // const minAllowedDate = new Date(currentDate);
+    //       // minAllowedDate.setHours(minAllowedDate.getHours()+7);
+    //       // console.log(isoDate)
+    //       // console.log(minAllowedDate)
+    //       if (isoDate < currentDate) {
+    //         throw new HttpException('Ngày hẹn không hợp lệ. Vui lòng chọn một ngày trong tương lai',HttpStatus.BAD_REQUEST);
+    //       }
+    //       const existingHospital = await this.prismaService.hospitals.findUnique({
+    //         where: { id: hospitalId },
+    //       });
+    //       const existingAppointment = await this.prismaService.appointments.findFirst({
+    //         where: {
+    //             userId,
+    //             status:"Booked"
+    //         },
+    //     });
+    //       if (existingAppointment) {
+    //           throw new HttpException(`Bạn đã có lịch đặt khám vào ngày ${existingAppointment.estimated.getDate()}`, HttpStatus.BAD_REQUEST);
+    //       }
+    //       if (!existingHospital) {
+    //         throw new Error('Mã bệnh viện không hợp lệ.');
+    //       }
+    //       console.log(existingAppointment)
+    //       const existingAppointmentsCount = await this.prismaService.appointments.count({
+    //         where: {
+    //           date: isoDate,
+    //           hospitalId,
+    //         },
+    //       });
+      
+    //       const orderNumber = existingAppointmentsCount === 0 ? 1 : existingAppointmentsCount + 1;
+    //       const baseTime = new Date(`${date}T8:00:00`);
+    //       const incrementMinutes = (orderNumber - 1) * 20;
+    //       const estimated = new Date(baseTime);
+    //       estimated.setMinutes(baseTime.getMinutes() + incrementMinutes);
+    //       const endTime = new Date(estimated);
+    //       endTime.setMinutes(endTime.getMinutes() + 20);
+    //       const isValidDate = (date: Date) => !isNaN(date.getTime());
+      
+    //       if (isValidDate(estimated) && isValidDate(endTime)) {
+    //         const appointment = await this.prismaService.appointments.create({
+    //           data: {
+    //             userId,
+    //             hospitalId,
+    //             orderNumber,
+    //             estimated: estimated.toISOString(), 
+    //             endTime: endTime.toISOString(), 
+    //             date: isoDate.toISOString(), 
+    //             status: 'Created',
+    //           },
+              
+    //         });
+    //         console.log(appointment)
+    //         return appointment;
+    //       } else {
+    //         throw new Error('Tính toán ngày không hợp lệ');
+    //       }
+    //     } catch (error) {
+    //       if (error instanceof HttpException) {
+    //         throw error; 
+    //       } else {
+    //         throw new HttpException('Đã xảy ra lỗi khi tạo cuộc hẹn.', HttpStatus.INTERNAL_SERVER_ERROR);
+    //       }
+    //     }
+    //   }
+
     async bookAppointment(dto: CreateAppointmentDto) {
-        try {
-          const { userId, hospitalId, date } = dto;
-          const isoDate = new Date(date + "T00:00:00.00Z");
-          const currentDate = new Date();  
-          currentDate.setHours(0,0,0,0)
-          // const minAllowedDate = new Date(currentDate);
-          // minAllowedDate.setHours(minAllowedDate.getHours()+7);
-          // console.log(isoDate)
-          // console.log(minAllowedDate)
-          if (isoDate < currentDate) {
-            throw new HttpException('Ngày hẹn không hợp lệ. Vui lòng chọn một ngày trong tương lai',HttpStatus.BAD_REQUEST);
-          }
-          const existingHospital = await this.prismaService.hospitals.findUnique({
-            where: { id: hospitalId },
-          });
-          const existingAppointment = await this.prismaService.appointments.findFirst({
-            where: {
-                userId,
-                status:"Booked"
-            },
+      try {
+        const { userId, hospitalId, date } = dto;
+        const isoDate = new Date(date + "T00:00:00.00Z");
+        const currentDate = new Date(); 
+        currentDate.setHours(0,0,0,0)
+        console.log(currentDate)
+        console.log(isoDate)
+        if (isoDate < currentDate) {
+          throw new HttpException('Ngày hẹn không hợp lệ. Vui lòng chọn một ngày trong tương lai',HttpStatus.BAD_REQUEST);
+        }
+        const existingHospital = await this.prismaService.hospitals.findUnique({
+          where: { id: hospitalId },
         });
-          if (existingAppointment) {
-              throw new HttpException(`Bạn đã có lịch đặt khám vào ngày ${existingAppointment.estimated.getDate()}`, HttpStatus.BAD_REQUEST);
-          }
-          if (!existingHospital) {
-            throw new Error('Mã bệnh viện không hợp lệ.');
-          }
-          
-          const existingAppointmentsCount = await this.prismaService.appointments.count({
-            where: {
-              date: isoDate,
+        
+        const existingAppointment = await this.prismaService.appointments.findFirst({
+                  where: {
+                      userId,
+                      status:"Booked"
+                },});
+        if (existingAppointment) {
+            throw new HttpException(`Bạn đã có lịch đặt khám vào ngày ${existingAppointment.estimated.getDate()}`, HttpStatus.BAD_REQUEST);
+        }
+        
+        const existingAppointmentsCount = await this.prismaService.appointments.count({
+          where: {
+            date: isoDate,
+            hospitalId,
+          },
+        });
+    
+        const orderNumber = existingAppointmentsCount === 0 ? 1 : existingAppointmentsCount + 1;
+    
+        const baseTime = new Date(`${date}T15:00:00`);
+        const incrementMinutes = (orderNumber - 1) * 20;
+    
+        const estimated = new Date(baseTime);
+        estimated.setMinutes(baseTime.getMinutes() + incrementMinutes);
+    
+        const endTime = new Date(estimated);
+        endTime.setMinutes(endTime.getMinutes() + 20);
+    
+        const isValidDate = (date: Date) => !isNaN(date.getTime());
+    
+        if (isValidDate(estimated) && isValidDate(endTime)) {
+          const appointment = await this.prismaService.appointments.create({
+            data: {
+              userId,
               hospitalId,
+              orderNumber,
+              estimated: estimated.toISOString(), 
+              endTime: endTime.toISOString(), 
+              date: isoDate.toISOString(), 
+              status: 'Created',
             },
           });
-      
-          const orderNumber = existingAppointmentsCount === 0 ? 1 : existingAppointmentsCount + 1;
-          const baseTime = new Date(`${date}T8:00:00`);
-          const incrementMinutes = (orderNumber - 1) * 20;
-          const estimated = new Date(baseTime);
-          estimated.setMinutes(baseTime.getMinutes() + incrementMinutes);
-          const endTime = new Date(estimated);
-          endTime.setMinutes(endTime.getMinutes() + 20);
-          const isValidDate = (date: Date) => !isNaN(date.getTime());
-      
-          if (isValidDate(estimated) && isValidDate(endTime)) {
-            const appointment = await this.prismaService.appointments.create({
-              data: {
-                userId,
-                hospitalId,
-                orderNumber,
-                estimated: estimated.toISOString(), 
-                endTime: endTime.toISOString(), 
-                date: isoDate.toISOString(), 
-                status: 'Created',
-              },
-            });
-      
-            return appointment;
-          } else {
-            throw new Error('Tính toán ngày không hợp lệ');
-          }
-        } catch (error) {
-          if (error instanceof HttpException) {
-            throw error; 
-          } else {
-            throw new HttpException('Đã xảy ra lỗi khi tạo cuộc hẹn.', HttpStatus.INTERNAL_SERVER_ERROR);
-          }
+    
+          return appointment;
+        } else {
+          throw new Error('Invalid date calculation');
+        }
+      } catch (error) {
+        if (error instanceof HttpException) {
+          throw error; 
+        } else {
+          throw new HttpException('Đã xảy ra lỗi khi tạo cuộc hẹn', HttpStatus.INTERNAL_SERVER_ERROR);
         }
       }
-      
+    }
       async getAppointmentsByUserId(userId: number) {
         try {
           const appointment = await this.prismaService.appointments.findFirst({

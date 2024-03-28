@@ -236,4 +236,6 @@ export class HospitalsService {
     }
     throw new successException('Xóa Bệnh viện thành công.');
   }
+
+  
 }
