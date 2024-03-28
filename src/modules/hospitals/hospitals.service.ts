@@ -140,7 +140,7 @@ export class HospitalsService {
     const currentDate = new Date();
     currentDate.setHours(0,0,0,0)
     const date = new Date(currentDate.toUTCString())
-    console.log(date)
+ 
     const appointments = await this.prismaService.appointments.findMany({
         where: {
             hospitalId: Number(hospitalId),
