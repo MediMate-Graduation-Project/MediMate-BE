@@ -95,10 +95,6 @@ export class AppointmentsService {
         if (isoDate < currentDate) {
           throw new HttpException('Ngày hẹn không hợp lệ. Vui lòng chọn một ngày trong tương lai',HttpStatus.BAD_REQUEST);
         }
-        // const existingHospital = await this.prismaService.hospitals.findUnique({
-        //   where: { id: hospitalId },
-        // });
-        
         const existingAppointment = await this.prismaService.appointments.findFirst({
                   where: {
                       userId,
