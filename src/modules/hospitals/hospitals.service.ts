@@ -79,7 +79,7 @@ export class HospitalsService {
 
   
   async getNearbyHospitals(lat: number, lon: number): Promise<Hospitals[]> {
-    const radius = 1000;
+    const radius = 10000;
     const apiKey = process.env.MAP_API_KEY;  
 
     try {
