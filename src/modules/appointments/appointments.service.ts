@@ -88,17 +88,16 @@ export class AppointmentsService {
     async bookAppointment(dto: CreateAppointmentDto) {
       try {
         const { userId, hospitalId, date } = dto;
-        const isoDate = new Date(date + "T00:00:00.00Z");
+        let isoDate = new Date(date);
         const currentDate = new Date(); 
         currentDate.setHours(0,0,0,0)
-        console.log(currentDate)
-        console.log(isoDate)
+  
         if (isoDate < currentDate) {
           throw new HttpException('Ngày hẹn không hợp lệ. Vui lòng chọn một ngày trong tương lai',HttpStatus.BAD_REQUEST);
         }
-        const existingHospital = await this.prismaService.hospitals.findUnique({
-          where: { id: hospitalId },
-        });
+        // const existingHospital = await this.prismaService.hospitals.findUnique({
+        //   where: { id: hospitalId },
+        // });
         
         const existingAppointment = await this.prismaService.appointments.findFirst({
                   where: {
@@ -118,7 +117,8 @@ export class AppointmentsService {
     
         const orderNumber = existingAppointmentsCount === 0 ? 1 : existingAppointmentsCount + 1;
     
-        const baseTime = new Date(`${date}T15:00:00`);
+        const baseTime = new Date(date);
+        baseTime.setHours(8,0,0,0)
         const incrementMinutes = (orderNumber - 1) * 20;
     
         const estimated = new Date(baseTime);
@@ -130,6 +130,8 @@ export class AppointmentsService {
         const isValidDate = (date: Date) => !isNaN(date.getTime());
     
         if (isValidDate(estimated) && isValidDate(endTime)) {
+          isoDate = new Date(isoDate.toUTCString().slice(0,-4))
+          console.log(isoDate)
           const appointment = await this.prismaService.appointments.create({
             data: {
               userId,
@@ -148,8 +150,10 @@ export class AppointmentsService {
         }
       } catch (error) {
         if (error instanceof HttpException) {
+          
           throw error; 
         } else {
+          console.error(error)
           throw new HttpException('Đã xảy ra lỗi khi tạo cuộc hẹn', HttpStatus.INTERNAL_SERVER_ERROR);
         }
       }

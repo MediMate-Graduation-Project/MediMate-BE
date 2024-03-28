@@ -58,18 +58,20 @@ export class HospitalsService {
 
 
   async getAppointmentByHospital(hospitalId: number): Promise<Appointments[]> {
-    const currentDate = format(new Date(), "yyyy-MM-dd'T'00:00:00.000'Z'");
-  
+    const currentDate = new Date();
+    const date = new Date(currentDate.toUTCString().slice(0,-4))
+    console.log(date)
     const appointment = await this.prismaService.appointments.findMany({
       where: {
         hospitalId: Number(hospitalId),
-        date: currentDate,
+        date,
         status: 'Booked',
       },
       orderBy: {
         orderNumber: 'asc',
       },
     });
+    console.log(appointment)
     if (!appointment.length) {
       return []; 
     }
@@ -135,12 +137,14 @@ export class HospitalsService {
   }
 
   async getActualOrderNumberHospital(hospitalId: number): Promise<OrderInfo> {
-    const currentDate = format(new Date(), "yyyy-MM-dd'T'00:00:00.000'Z'");
-  
+    const currentDate = new Date();
+    currentDate.setHours(0,0,0,0)
+    const date = new Date(currentDate.toUTCString())
+    console.log(date)
     const appointments = await this.prismaService.appointments.findMany({
         where: {
             hospitalId: Number(hospitalId),
-            date: currentDate,
+            date,
             status: 'Booked',
         },
         orderBy: {
@@ -151,7 +155,7 @@ export class HospitalsService {
           user: true 
       }
     });
-
+    console.log(appointments)
     if (appointments.length === 0) {
         return { actualNumber: 0, nextThreeAppointments: [] }; 
     }
