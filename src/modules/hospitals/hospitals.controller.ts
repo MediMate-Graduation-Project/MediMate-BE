@@ -19,7 +19,7 @@ export class HospitalsController {
 
   @Get('map')
   async getNearbyHospitals(
-    @Query('lat') lat: number,
+    @Query('lat') lat: number,  
     @Query('lon') lon: number,
   ) {
     const nearbyHospitals = await this.hospitalsService.getNearbyHospitals(lat, lon);

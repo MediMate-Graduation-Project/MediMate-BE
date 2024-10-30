@@ -95,6 +95,7 @@ export class AppointmentsService {
         if (isoDate < currentDate) {
           throw new HttpException('Ngày hẹn không hợp lệ. Vui lòng chọn một ngày trong tương lai',HttpStatus.BAD_REQUEST);
         }
+        
         const existingAppointment = await this.prismaService.appointments.findFirst({
                   where: {
                       userId,
@@ -110,9 +111,7 @@ export class AppointmentsService {
             hospitalId,
           },
         });
-    
         const orderNumber = existingAppointmentsCount === 0 ? 1 : existingAppointmentsCount + 1;
-    
         const baseTime = new Date(date);
         baseTime.setHours(8,0,0,0)
         const incrementMinutes = (orderNumber - 1) * 20;
@@ -127,7 +126,6 @@ export class AppointmentsService {
     
         if (isValidDate(estimated) && isValidDate(endTime)) {
           isoDate = new Date(isoDate.toUTCString().slice(0,-4))
-          console.log(isoDate)
           const appointment = await this.prismaService.appointments.create({
             data: {
               userId,
